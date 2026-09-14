@@ -51,9 +51,7 @@ jobs:
               for language in zh en; do
                 for line in 1 2 3; do
                   target="site/audio/$id/p${page}_${language}_${line}.mp3"
-                  if ! curl --retry 2 --retry-all-errors --connect-timeout 20 -fsSL "$base/audio/$id/p${page}_${language}_${line}.mp3" -o "$target"; then
-                    rm -f "$target"
-                  fi
+                  curl --retry 2 --retry-all-errors --connect-timeout 20 -fsSL                     "$base/audio/$id/p${page}_${language}_${line}.mp3"                     -o "$target" || rm -f "$target"
                 done
               done
             done
@@ -62,9 +60,16 @@ jobs:
           curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/01_turnip_cover.webp" -o site/art/01_turnip_cover.webp
           touch site/.nojekyll
 
+          while IFS= read -r -d '' audio_file; do
+            mime_type="$(file -b --mime-type "$audio_file")"
+            if [[ "$mime_type" != audio/* ]]; then
+              rm -f "$audio_file"
+            fi
+          done < <(find site/audio -type f -name '*.mp3' -print0)
+
           image_count="$(find site/art -type f -name '*.webp' | wc -l)"
           audio_count="$(find site/audio -type f -name '*.mp3' | wc -l)"
-          echo "Downloaded $image_count illustrations and $audio_count narration clips."
+          echo "Validated $image_count illustrations and $audio_count narration clips."
 
           grep -q "小芽绘本馆" site/index.html
           node --check site/app.js
