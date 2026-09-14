@@ -80,6 +80,11 @@ jobs:
           file site/art/01_turnip_1.webp | grep -q "Web/P"
           file site/audio/01_turnip/p1_zh_1.mp3 | grep -qi "audio"
 
+      - name: Add encrypted data center training site
+        run: |
+          mkdir -p site/datacenter
+          cp -R datacenter/. site/datacenter/
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
