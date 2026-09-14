@@ -1,0 +1,85 @@
+name: Publish picture book library
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download the complete picture book site
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://xiaoya-story-garden.zxwdfgg.chatgpt.site"
+          mkdir -p site/art site/audio
+          for file in index.html styles.css app.js books.js narrator.js; do
+            curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/$file" -o "site/$file"
+          done
+
+          ids=(
+            01_turnip 02_pigs 03_race 04_hen 05_lion
+            06_crow 07_wind 08_duckling 09_monkeys 10_gudong
+            11_share 12_puddle 13_cloud 14_sleep 15_tidy
+            16_dino 17_car 18_moon 19_seed 20_elephant
+          )
+
+          for id in "${ids[@]}"; do
+            pages=4
+            if [[ "$id" == "01_turnip" ]]; then pages=12; fi
+            mkdir -p "site/audio/$id"
+            for page in $(seq 1 "$pages"); do
+              curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/${id}_${page}.webp" -o "site/art/${id}_${page}.webp"
+              for language in zh en; do
+                for line in 1 2 3; do
+                  target="site/audio/$id/p${page}_${language}_${line}.mp3"
+                  if ! curl --retry 2 --retry-all-errors --connect-timeout 20 -fsSL "$base/audio/$id/p${page}_${language}_${line}.mp3" -o "$target"; then
+                    rm -f "$target"
+                  fi
+                done
+              done
+            done
+          done
+
+          curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/01_turnip_cover.webp" -o site/art/01_turnip_cover.webp
+          touch site/.nojekyll
+          grep -q "小芽绘本馆" site/index.html
+          node --check site/app.js
+          node --check site/books.js
+          node --check site/narrator.js
+          test "$(find site/art -type f -name '*.webp' | wc -l)" -eq 89
+          test "$(find site/audio -type f -name '*.mp3' | wc -l)" -eq 351
+          test -z "$(find site/art -type f -name '*.webp' -size -10k -print -quit)"
+          test -z "$(find site/audio -type f -name '*.mp3' -size -2k -print -quit)"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Publish website
+        id: deployment
+        uses: actions/deploy-pages@v4
