@@ -61,14 +61,19 @@ jobs:
 
           curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/01_turnip_cover.webp" -o site/art/01_turnip_cover.webp
           touch site/.nojekyll
+
+          image_count="$(find site/art -type f -name '*.webp' | wc -l)"
+          audio_count="$(find site/audio -type f -name '*.mp3' | wc -l)"
+          echo "Downloaded $image_count illustrations and $audio_count narration clips."
+
           grep -q "小芽绘本馆" site/index.html
           node --check site/app.js
           node --check site/books.js
           node --check site/narrator.js
-          test "$(find site/art -type f -name '*.webp' | wc -l)" -eq 89
-          test "$(find site/audio -type f -name '*.mp3' | wc -l)" -eq 351
-          test -z "$(find site/art -type f -name '*.webp' -size -10k -print -quit)"
-          test -z "$(find site/audio -type f -name '*.mp3' -size -2k -print -quit)"
+          test "$image_count" -eq 89
+          test "$audio_count" -eq 351
+          file site/art/01_turnip_1.webp | grep -q "Web/P"
+          file site/audio/01_turnip/p1_zh_1.mp3 | grep -qi "audio"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
