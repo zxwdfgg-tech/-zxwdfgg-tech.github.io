@@ -78,7 +78,7 @@ def build(destination):
     body = fetch('/share/index.html').decode('utf-8')
     css = fetch('/share/styles.css')
     js = fetch('/share/app.js')
-    latest = editions[0]
+    latest = next((e for e in editions if e.get('style') == 'blue-white'), editions[0])
     poster = '<button class="poster-button" data-action="open-latest" aria-label="查看高清资讯原图"><img src="' + html.escape(latest['image'],quote=True) + '" alt="' + html.escape(latest['title'],quote=True) + '" fetchpriority="high"></button>'
     body = body.replace('<!--LATEST-->', poster)
     body = body.replace('正在读取最新资讯…', html.escape(latest['title']))
@@ -95,7 +95,7 @@ def build(destination):
     (target/'styles.css').write_bytes(css)
     (target/'app.js').write_bytes(js)
     (target/'favicon.svg').write_bytes(fetch('/favicon.svg'))
-    print(json.dumps({'success':True,'editions':len(editions),'latest':latest['date'],'images':len(used),'self_contained':True}))
+    print(json.dumps({'success':True,'editions':len(editions),'blue_white':sum(e.get('style')=='blue-white' for e in editions),'dark':sum(e.get('style')=='dark' for e in editions),'latest':latest['date'],'images':len(used),'self_contained':True}))
 
 if __name__ == '__main__':
     build(sys.argv[1] if len(sys.argv)>1 else 'daily-cache')
