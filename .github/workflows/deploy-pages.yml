@@ -1,10 +1,12 @@
-name: Publish picture book library
+name: Publish public websites
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    - cron: '20,50 12 * * *'
 
 permissions:
   contents: read
@@ -25,14 +27,22 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Restore picture book assets
+        id: books-cache
+        uses: actions/cache@v4
+        with:
+          path: book-cache
+          key: public-picture-books-2026-09-14-v1
+
       - name: Download the complete picture book site
+        if: steps.books-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -euo pipefail
           base="https://xiaoya-story-garden.zxwdfgg.chatgpt.site"
-          mkdir -p site/art site/audio
+          mkdir -p book-cache/art book-cache/audio
           for file in index.html styles.css app.js books.js narrator.js; do
-            curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/$file" -o "site/$file"
+            curl -A "Mozilla/5.0" --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/$file" -o "book-cache/$file"
           done
 
           ids=(
@@ -45,40 +55,59 @@ jobs:
           for id in "${ids[@]}"; do
             pages=4
             if [[ "$id" == "01_turnip" ]]; then pages=12; fi
-            mkdir -p "site/audio/$id"
+            mkdir -p "book-cache/audio/$id"
             for page in $(seq 1 "$pages"); do
-              curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/${id}_${page}.webp" -o "site/art/${id}_${page}.webp"
+              curl -A "Mozilla/5.0" --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/${id}_${page}.webp" -o "book-cache/art/${id}_${page}.webp"
               for language in zh en; do
                 for line in 1 2 3; do
-                  target="site/audio/$id/p${page}_${language}_${line}.mp3"
-                  curl --retry 2 --retry-all-errors --connect-timeout 20 -fsSL                     "$base/audio/$id/p${page}_${language}_${line}.mp3"                     -o "$target" || rm -f "$target"
+                  target="book-cache/audio/$id/p${page}_${language}_${line}.mp3"
+                  curl -A "Mozilla/5.0" --retry 2 --retry-all-errors --connect-timeout 20 -fsSL                     "$base/audio/$id/p${page}_${language}_${line}.mp3"                     -o "$target" || rm -f "$target"
                 done
               done
             done
           done
 
-          curl --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/01_turnip_cover.webp" -o site/art/01_turnip_cover.webp
-          touch site/.nojekyll
+          curl -A "Mozilla/5.0" --retry 4 --retry-all-errors --connect-timeout 20 -fsSL "$base/art/01_turnip_cover.webp" -o book-cache/art/01_turnip_cover.webp
+          touch book-cache/.nojekyll
 
           while IFS= read -r -d '' audio_file; do
             mime_type="$(file -b --mime-type "$audio_file")"
             if [[ "$mime_type" != audio/* ]]; then
               rm -f "$audio_file"
             fi
-          done < <(find site/audio -type f -name '*.mp3' -print0)
+          done < <(find book-cache/audio -type f -name '*.mp3' -print0)
 
-          image_count="$(find site/art -type f -name '*.webp' | wc -l)"
-          audio_count="$(find site/audio -type f -name '*.mp3' | wc -l)"
+          image_count="$(find book-cache/art -type f -name '*.webp' | wc -l)"
+          audio_count="$(find book-cache/audio -type f -name '*.mp3' | wc -l)"
           echo "Validated $image_count illustrations and $audio_count narration clips."
 
-          grep -q "小芽绘本馆" site/index.html
-          node --check site/app.js
-          node --check site/books.js
-          node --check site/narrator.js
+          grep -q "小芽绘本馆" book-cache/index.html
+          node --check book-cache/app.js
+          node --check book-cache/books.js
+          node --check book-cache/narrator.js
           test "$image_count" -eq 89
           test "$audio_count" -eq 351
-          file site/art/01_turnip_1.webp | grep -q "Web/P"
-          file site/audio/01_turnip/p1_zh_1.mp3 | grep -qi "audio"
+          file book-cache/art/01_turnip_1.webp | grep -q "Web/P"
+          file book-cache/audio/01_turnip/p1_zh_1.mp3 | grep -qi "audio"
+
+      - name: Prepare picture book publication
+        run: |
+          mkdir -p site
+          cp -R book-cache/. site/
+
+      - name: Restore daily infographic assets
+        uses: actions/cache@v4
+        with:
+          path: daily-cache
+          key: daily-infographics-v2-${{ github.run_id }}
+          restore-keys: daily-infographics-v2-
+
+      - name: Build the public daily infographic website
+        run: |
+          python scripts/mirror-daily.py daily-cache
+          node --check daily-cache/app.js
+          mkdir -p site/dc-daily
+          cp -R daily-cache/. site/dc-daily/
 
       - name: Add encrypted data center training site
         run: |
