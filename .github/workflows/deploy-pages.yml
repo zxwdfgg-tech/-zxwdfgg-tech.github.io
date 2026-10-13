@@ -107,8 +107,7 @@ jobs:
         run: |
           # If the primary content source is temporarily unavailable, reuse the last successful local cache.
           python scripts/mirror-daily.py daily-cache || echo 'Primary daily source unavailable; using last successful mirror'
-          # Always render date-specific, explicitly labelled knowledge reviews where genuine editions are absent.
-          python scripts/ensure-daily-edition.py daily-cache
+          # Publish only full-quality original infographics; never synthesize text-card replacements.
           python scripts/validate-daily.py daily-cache
           node --check daily-cache/app.js
           mkdir -p site/dc-daily
