@@ -132,3 +132,6 @@ jobs:
       - name: Publish website
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify published daily content and both images
+        run: python scripts/verify-live-daily.py
