@@ -152,6 +152,16 @@ TOPICS = [
   ("判断原则","优化能耗不能以牺牲关键业务的可靠性为代价。")])
 ]
 
+def curated_for(day, style):
+    # Source-backed daily editions can be committed independently of the upstream Sites API.
+    p=Path('dc-daily/editorial.json')
+    if not p.exists():
+        return None
+    for e in json.loads(p.read_text(encoding='utf8')).get('editions',[]):
+        if e.get('date')==day.isoformat() and e.get('style')==style and len(e.get('points',[]))==6:
+            return e
+    return None
+
 def esc(s):
     return html.escape(str(s), quote=True)
 
@@ -163,7 +173,8 @@ def chunks(s, width):
     return [s[i:i+width] for i in range(0, len(s), width)]
 
 def svg_for(day, style):
-    title, subtitle, points = topic_for(day)
+    news=curated_for(day,style)
+    title, subtitle, points = (news['title'],news['subtitle'],news['points']) if news else topic_for(day)
     portrait = style == 'blue-white'
     w,h=(1280,1920) if portrait else (1920,1080)
     navy='#102B56'; white='#FFFFFF'; gold='#F4C655'
@@ -173,7 +184,7 @@ def svg_for(day, style):
     def label(x,y,s,size,color,weight=400):
         pieces.append(f'<text x="{x}" y="{y}" font-size="{size}" fill="{color}" font-weight="{weight}" font-family="Noto Sans CJK SC,Microsoft YaHei,Arial,sans-serif">{esc(s)}</text>')
     label(65,85,"数据中心每日资讯  /  DATA CENTER DAILY",40 if portrait else 38,white,700)
-    label(65,145,day.strftime('%Y.%m.%d')+"  ·  运维知识复盘",29, gold,700)
+    label(65,145,day.strftime('%Y.%m.%d')+("  ·  今日行业新闻" if news else "  ·  运维知识复盘"),29, gold,700)
     label(65,225 if portrait else 193,title,57 if portrait else 52,white,800)
     if portrait:
         label(65,296,subtitle,29,'#DAE8FA')
@@ -184,7 +195,7 @@ def svg_for(day, style):
             label(82,y+65,f'{i+1:02d}  {head}',36,navy,700)
             for j,line in enumerate(chunks(body,36)[:3]):
                 label(84,y+119+j*43,line,29,'#374A64')
-        label(65,1853,'技术学习内容 · 非当日突发新闻｜实际操作请以现场规程为准',24,'#4B6585')
+        label(65,1853,('来源：'+news['source_title']+'｜计划不等于项目落地') if news else '技术学习内容 · 非当日突发新闻｜实际操作请以现场规程为准',24,'#4B6585')
     else:
         label(1100,140,subtitle,28,'#D1E9FF')
         for i,(head,body) in enumerate(points):
@@ -193,7 +204,7 @@ def svg_for(day, style):
             label(x+24,y+65,f'{i+1:02d}  {head}',31,gold,700)
             for j,line in enumerate(chunks(body,23)[:5]):
                 label(x+26,y+123+j*40,line,26,'#E3F0FC')
-        label(52,1015,'技术学习内容 · 非当日突发新闻｜实际操作请以现场规程为准',26,'#BED2E8')
+        label(52,1015,('来源：'+news['source_title']+'｜融资不等于新增投运容量') if news else '技术学习内容 · 非当日突发新闻｜实际操作请以现场规程为准',26,'#BED2E8')
     pieces.append('</svg>')
     return '\n'.join(pieces)
 
@@ -228,15 +239,19 @@ def main(dst):
             suffix='blue' if style=='blue-white' else 'dark'
             name=f'{d.isoformat()}-{suffix}.svg'
             (images/name).write_text(svg_for(d,style),encoding='utf8')
-            title,sub,_=topic_for(d)
+            news=curated_for(d,style)
+            title,sub,_=(news['title'],news['subtitle'],news['points']) if news else topic_for(d)
             local.append({
                 'id':f'offline-{d.isoformat()}-{suffix}',
                 'date':d.isoformat(), 'style':style,
-                'title':f'【知识复盘】{title}',
-                'summary':sub+'。本期为专业技术复盘，不是当日新闻。',
+                'title':('【资讯解读】' if news else '【知识复盘】')+title,
+                'summary':sub+('。据'+news['source_title']+'；报道和项目进展须区分。' if news else '。本期为专业技术复盘，不是当日新闻。'),
                 'topic':title, 'image':'./images/'+name,
                 'thumbnail':'./images/'+name, 'sources':[],
-                'kind':'technical-review', 'is_fallback':True
+                'source_url': news.get('source_url') if news else None,
+                'source_title':news.get('source_title') if news else None,
+                'kind':'news-analysis' if news else 'technical-review',
+                'is_fallback':not bool(news)
             })
     data['editions']=sorted(entries+local,key=lambda v:v.get('date',''),reverse=True)
     archive.write_text(json.dumps(local,ensure_ascii=False),encoding='utf8')
