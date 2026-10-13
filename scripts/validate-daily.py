@@ -17,6 +17,10 @@ for style in ('blue-white','dark'):
     f=root/e['image'].removeprefix('./')
     if not f.is_file() or f.stat().st_size < 200:
         raise RuntimeError(f"Missing or empty infographic: {f}")
+    raw=f.read_bytes()
+    raster=(raw.startswith(b'\x89PNG\r\n\x1a\n') or raw.startswith(b'\xff\xd8\xff') or (raw[:4]==b'RIFF' and raw[8:12]==b'WEBP'))
+    if not raster:
+        raise RuntimeError(f"Refuse simplified text-card replacement for {style}: {f}")
     status[style]={'title':e.get('title'),'kind':e.get('kind','upstream'),'image':e['image'],'bytes':f.stat().st_size}
 body=(root/'index.html').read_text(encoding='utf8')
 if today not in body:
