@@ -103,6 +103,9 @@ jobs:
           key: daily-infographics-v2-${{ github.run_id }}
           restore-keys: daily-infographics-v2-
 
+      - name: Install image optimization dependency
+        run: python -m pip install 'Pillow==11.3.0'
+
       - name: Build the public daily infographic website
         run: |
           # If the primary content source is temporarily unavailable, reuse the last successful local cache.

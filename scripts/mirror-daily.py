@@ -10,6 +10,10 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+import importlib.util
+_spec=importlib.util.spec_from_file_location("reader_optimizer",Path(__file__).with_name("optimize-reader.py"))
+_optimizer=importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_optimizer)
 
 ORIGIN = 'https://dc-daily-xiaowei.zxwdfgg.chatgpt.site'
 AGENT = 'Mozilla/5.0'
@@ -71,15 +75,17 @@ def build(destination):
         e['image'] = './' + manifest[e['image']]['file']
         e['thumbnail'] = './' + manifest[e['thumbnail']]['file']
     used = {v['file'] for v in manifest.values()}
+    used.update(_optimizer.optimize(target, editions))
     for local in assets.iterdir():
         if local.is_file() and f'images/{local.name}' not in used: local.unlink()
     editions.sort(key=lambda e:e['date'], reverse=True)
     data = {'editions': editions, 'config': config, 'syncedAt': datetime.now(timezone.utc).isoformat()}
     body = fetch('/share/index.html').decode('utf-8')
     css = fetch('/share/styles.css')
-    js = fetch('/share/app.js')
+    js = Path('dc-daily/app-fast.js').read_bytes()
+    (target/'sw.js').write_bytes(Path('dc-daily/sw.js').read_bytes())
     latest = next((e for e in editions if e.get('style') == 'blue-white'), editions[0])
-    poster = '<button class="poster-button" data-action="open-latest" aria-label="查看高清资讯原图"><img src="' + html.escape(latest['image'],quote=True) + '" alt="' + html.escape(latest['title'],quote=True) + '" fetchpriority="high"></button>'
+    poster = '<button class="poster-button" data-action="open-latest" aria-label="查看高清资讯原图"><img src="' + html.escape(latest.get('placeholder') or latest['thumbnail'],quote=True) + '" alt="' + html.escape(latest['title'],quote=True) + '" fetchpriority="high"></button>'
     body = body.replace('<!--LATEST-->', poster)
     body = body.replace('正在读取最新资讯…', html.escape(latest['title']))
     body = body.replace('<p id="latest-summary"></p>', '<p id="latest-summary">' + html.escape(latest['summary']) + '</p>')
@@ -99,3 +105,4 @@ def build(destination):
 
 if __name__ == '__main__':
     build(sys.argv[1] if len(sys.argv)>1 else 'daily-cache')
+

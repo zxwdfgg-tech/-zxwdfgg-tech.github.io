@@ -1,28 +1,19 @@
-#!/usr/bin/env python3
-"""Fail the build if the public archive lacks today's complete two-style edition."""
-import json
-from datetime import datetime, timedelta, timezone
+"""Validate the latest real edition in each style without inventing today's news."""
+import json,sys
 from pathlib import Path
-import sys
-
-root=Path(sys.argv[1])
-today=datetime.now(timezone(timedelta(hours=8))).date().isoformat()
-data=json.loads((root/'data.json').read_text(encoding='utf8'))
-status={}
+from datetime import datetime,timedelta,timezone
+root=Path(sys.argv[1]);data=json.loads((root/'data.json').read_text());today=datetime.now(timezone(timedelta(hours=8))).date().isoformat()
+report={}
 for style in ('blue-white','dark'):
-    matches=[e for e in data['editions'] if e.get('date')==today and e.get('style')==style]
-    if not matches:
-        raise RuntimeError(f"Missing {today} {style} edition")
-    e=matches[0]
-    f=root/e['image'].removeprefix('./')
-    if not f.is_file() or f.stat().st_size < 200:
-        raise RuntimeError(f"Missing or empty infographic: {f}")
-    raw=f.read_bytes()
-    raster=(raw.startswith(b'\x89PNG\r\n\x1a\n') or raw.startswith(b'\xff\xd8\xff') or (raw[:4]==b'RIFF' and raw[8:12]==b'WEBP'))
-    if not raster:
-        raise RuntimeError(f"Refuse simplified text-card replacement for {style}: {f}")
-    status[style]={'title':e.get('title'),'kind':e.get('kind','upstream'),'image':e['image'],'bytes':f.stat().st_size}
-body=(root/'index.html').read_text(encoding='utf8')
-if today not in body:
-    raise RuntimeError(f"Homepage does not contain edition for {today}")
-print(json.dumps({'verified_public_build_date':today,'both_styles_complete':True,'styles':status},ensure_ascii=False))
+ entries=sorted((e for e in data['editions'] if e.get('style')==style),key=lambda e:e['date'],reverse=True)
+ if not entries:raise RuntimeError('Missing style '+style)
+ e=entries[0]
+ if e['date']>today:raise RuntimeError('Future-dated edition')
+ for field in ('image','thumbnail','preview'):
+  p=root/e[field].removeprefix('./');raw=p.read_bytes()
+  if len(raw)<200 or not(raw.startswith(b'\x89PNG') or raw.startswith(b'\xff\xd8\xff') or (raw[:4]==b'RIFF' and raw[8:12]==b'WEBP')):raise RuntimeError('Invalid raster '+str(p))
+ report[style]={'id':e['id'],'date':e['date'],'image':e['image'],'preview':e['preview']}
+body=(root/'index.html').read_text()
+if 'data:image/webp;base64,' not in body:raise RuntimeError('Missing instant cover')
+if not (root/'sw.js').exists():raise RuntimeError('Missing image cache worker')
+print(json.dumps({'verified_build':True,'latest_styles':report,'today':today},ensure_ascii=False))
