@@ -18,8 +18,9 @@
   function safeLink(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
   function posterPath(value){try{const u=new URL(value,location.href);return u.origin===location.origin?u.href:'';}catch{return '';}}
   function decodedImage(img,url,key){
+    const request=(Number(img.dataset.request)||0)+1;img.dataset.request=String(request);
     const probe=new Image();probe.decoding='async';probe.fetchPriority='high';
-    probe.onload=async()=>{try{if(probe.decode)await probe.decode();}catch{} if(img.dataset.key===key)img.src=url;};
+    probe.onload=async()=>{try{if(probe.decode)await probe.decode();}catch{} if(img.dataset.key===key&&img.dataset.request===String(request))img.src=url;};
     probe.onerror=()=>{};probe.src=url;
   }
   function showImage(img,e,hero){
@@ -87,7 +88,7 @@
   }
   function open(e){
     if(!e)return;
-    selected=e;zoom=false;$('reader-scroll').classList.remove('zoomed');
+    selected=e;zoom=false;readerScale=1;$('reader-image').style.width='100%';$('reader-scroll').classList.remove('zoomed');
     document.querySelector('[data-action="zoom"]').textContent='放大原图 ⊕';
     $('reader-title').textContent=e.title;
     $('reader-date').textContent=`${e.date.replaceAll('-','.')} · ${labels[e.style]} · ${e.category}`;
@@ -114,10 +115,38 @@
     const u=new URL('./',location.href);if(e)u.searchParams.set('id',e.id);
     try{if(navigator.share)await navigator.share({title:e?.title||'数据中心每日资讯',text:'蓝白图解、深色简报，每日自动更新。免费阅读，无需登录。',url:u.href});else if(navigator.clipboard){await navigator.clipboard.writeText(u.href);message('网址已复制，可以发到微信或给朋友');}else{window.prompt('复制网址发给朋友',u.href);}}catch(err){if(err.name!=='AbortError')message('请复制浏览器地址栏的网址分享');}
   }
-  function download(e){
-    if(!e)return;const a=document.createElement('a');a.href=posterPath(e.image);
-    a.download=`数据中心每日资讯_${e.date}_${labels[e.style]}.${e.image.split('.').pop()}`;a.target='_blank';a.rel='noopener';a.click();message('手机可在打开的图片上长按保存');
+  async function download(e){
+    if(!e)return;const url=posterPath(e.image),name=`数据中心每日资讯_${e.date}_${labels[e.style]}.${e.image.split('.').pop()}`;
+    if(window.NativeDaily&&typeof window.NativeDaily.saveImage==='function'){
+      window.NativeDaily.saveImage(url,name);return;
+    }
+    message('正在准备原图…');
+    try{
+      const response=await fetch(url);if(!response.ok)throw Error('download');
+      const blob=await response.blob(),file=new File([blob],name,{type:blob.type||'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:e.title});return;}
+      const object=URL.createObjectURL(blob),a=document.createElement('a');a.href=object;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(object),60000);
+      message(/Android/i.test(navigator.userAgent)?'若没有保存提示，请安装新版安卓软件后重试':'已发起原图下载');
+    }catch(err){if(err.name!=='AbortError')message('下载未完成，请检查网络后重试');}
   }
+  let readerScale=1,pinch=null,lastTap=0;
+  function setScale(value,cx,cy){
+    const pane=$('reader-scroll'),img=$('reader-image'),old=readerScale;
+    readerScale=Math.max(1,Math.min(6,value));zoom=readerScale>1.05;
+    pane.classList.toggle('zoomed',zoom);img.style.width=zoom?`${pane.clientWidth*readerScale}px`:'100%';img.style.maxWidth='none';
+    if(cx!==undefined){pane.scrollLeft=(pane.scrollLeft+cx)*readerScale/old-cx;pane.scrollTop=(pane.scrollTop+cy)*readerScale/old-cy;}
+    document.querySelector('[data-action="zoom"]').textContent=zoom?'适应屏幕 ⊖':'放大原图 ⊕';
+  }
+  const pane=$('reader-scroll');pane.style.maxHeight='65vh';pane.style.overflow='auto';pane.style.webkitOverflowScrolling='touch';
+  pane.addEventListener('touchstart',ev=>{
+    if(ev.touches.length===2){const a=ev.touches[0],b=ev.touches[1];pinch={distance:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),scale:readerScale};if(selected)upgradeOriginal($('reader-image'),selected);}
+  },{passive:true});
+  pane.addEventListener('touchmove',ev=>{
+    if(pinch&&ev.touches.length===2){ev.preventDefault();const a=ev.touches[0],b=ev.touches[1],r=pane.getBoundingClientRect();setScale(pinch.scale*Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)/pinch.distance,(a.clientX+b.clientX)/2-r.left,(a.clientY+b.clientY)/2-r.top);}
+  },{passive:false});
+  pane.addEventListener('touchend',ev=>{if(ev.touches.length<2)pinch=null;});
+  $('reader-image').addEventListener('dblclick',()=>{if(selected){upgradeOriginal($('reader-image'),selected);setScale(zoom?1:3);}});
+
   function reset(){category='全部';onlySaved=false;$('search').value='';$('month').value='';resetLimits();render();}
   document.addEventListener('click',ev=>{
     const t=ev.target.closest('button,a');if(!t)return;
@@ -127,7 +156,7 @@
     if(t.dataset.more){limits[t.dataset.more]+=8;renderArchive();return;}
     switch(t.dataset.action){
       case 'open-latest':open(latest());break;case 'save-latest':download(latest());break;case 'close':close();break;
-      case 'zoom':if(selected)upgradeOriginal($('reader-image'),selected);zoom=!zoom;$('reader-scroll').classList.toggle('zoomed',zoom);t.textContent=zoom?'适应屏幕 ⊖':'放大原图 ⊕';break;
+      case 'zoom':if(selected)upgradeOriginal($('reader-image'),selected);setScale(zoom?1:3);break;
       case 'save-selected':download(selected);break;case 'bookmark':if(selected)bookmark(selected.id);break;
       case 'share-site':void share();break;case 'share-selected':void share(selected);break;
       case 'older':if(selected){const group=peers(selected);open(group[group.findIndex(e=>e.id===selected.id)+1]);}break;
@@ -162,5 +191,6 @@
   openRequested();
   async function refresh(){try{const r=await fetch(`./data.json?t=${Date.now()}`,{cache:'no-store'});if(r.ok){apply(await r.json());openRequested();}}catch{}}
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+  window.addEventListener('daily-resume',()=>{void refresh();});
   void refresh();setInterval(()=>{if(document.visibilityState==='visible')void refresh();},120000);
 })();
