@@ -108,8 +108,11 @@ jobs:
 
       - name: Build the public daily infographic website
         run: |
-          # If the primary content source is temporarily unavailable, reuse the last successful local cache.
-          python scripts/mirror-daily.py daily-cache || echo 'Primary daily source unavailable; using last successful mirror'
+          # Verify the reader fixes before publication. Never report a stale mirror as a successful update.
+          node --check dc-daily/app-fast.js
+          node --check dc-daily/sw.js
+          python scripts/test-reader-build.py
+          python scripts/mirror-daily.py daily-cache
           # Publish only full-quality original infographics; never synthesize text-card replacements.
           python scripts/validate-daily.py daily-cache
           node --check daily-cache/app.js
@@ -137,3 +140,4 @@ jobs:
 
       - name: Verify published daily content and both images
         run: python scripts/verify-live-daily.py
+

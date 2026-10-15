@@ -9,9 +9,9 @@
   const shortDate = date => `${Number(date.slice(5,7))}月${Number(date.slice(8,10))}日`;
   const today = () => new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai'}).format(new Date());
   const stored = key => {try {const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(v=>typeof v==='string'):[];}catch{return [];}};
-  let editions=[],config={products:[]},selected=null,category='全部',onlySaved=false,zoom=false;
+  let editions=[],config={products:[]},selected=null,category='全部',onlySaved=false,zoom=false,heroStyle=null,bootstrapCounts=null;
   let limits={'blue-white':4,dark:4},saved=stored('dc-daily-saved'),reads=stored('dc-daily-reads'),toastTimer;
-  const latest = () => editions.find(e=>e.style==='blue-white') || editions[0];
+  const latest = () => (heroStyle ? editions.find(e=>e.style===heroStyle) : editions[0]) || editions[0];
   const peers = e => editions.filter(item=>item.style===e.style);
   function message(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
   function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{message('浏览器未允许保存记录');}}
@@ -19,16 +19,18 @@
   function posterPath(value){try{const u=new URL(value,location.href);return u.origin===location.origin?u.href:'';}catch{return '';}}
   function decodedImage(img,url,key){
     const request=(Number(img.dataset.request)||0)+1;img.dataset.request=String(request);
+    if(!url)return;
     const probe=new Image();probe.decoding='async';probe.fetchPriority='high';
     probe.onload=async()=>{try{if(probe.decode)await probe.decode();}catch{} if(img.dataset.key===key&&img.dataset.request===String(request))img.src=url;};
-    probe.onerror=()=>{};probe.src=url;
+    probe.onerror=()=>{if(selected&&img.id==='reader-image')message('高清预览暂未加载成功，可点“重试图片”或直接打开原图');};probe.src=url;
   }
   function showImage(img,e,hero){
     const key=e.id+'|'+e.image+'|'+(e.preview||'');
     if(img.dataset.key===key)return;
     img.dataset.key=key;img.alt=e.title+'完整资讯图';img.decoding='async';
     if(e.width&&e.height){img.width=e.width;img.height=e.height;img.style.height='auto';}
-    const small=e.placeholder||posterPath(e.thumbnail||e.image);
+    const small=e.placeholder||posterPath(e.thumbnail||e.preview||e.image);
+    img.onerror=()=>{img.onerror=null;img.src=posterPath(e.preview||e.image);};
     img.src=small;
     decodedImage(img,posterPath(e.preview||e.image),key);
   }
@@ -38,15 +40,16 @@
     const e=latest();if(!e)return;
     $('latest-date').textContent=e.date.replaceAll('-','.');
     $('latest-title').textContent=e.title;$('latest-summary').textContent=e.summary;
-    $('edition-status').textContent=e.date===today()?'今日蓝白图':'最新蓝白图';
+    $('edition-status').textContent=(e.date===today()?'今日':'最新')+labels[e.style];
+    renderLatestSwitch();
     $('image-date').textContent=`${shortDate(e.date)} · ${labels[e.style]} · 点击放大`; 
     let button=document.querySelector('.poster-button');
     if(!button){button=document.createElement('button');button.className='poster-button';button.dataset.action='open-latest';button.innerHTML='<img alt="">';document.querySelector('.latest-poster').prepend(button);}
     button.setAttribute('aria-label',`放大查看${e.title}`);
     showImage(button.querySelector('img'),e,true);
-    $('edition-count').textContent=editions.length;
-    $('blue-total').textContent=editions.filter(item=>item.style==='blue-white').length;
-    $('dark-total').textContent=editions.filter(item=>item.style==='dark').length;
+    $('edition-count').textContent=bootstrapCounts?.total||editions.length;
+    $('blue-total').textContent=bootstrapCounts?.['blue-white']||editions.filter(item=>item.style==='blue-white').length;
+    $('dark-total').textContent=bootstrapCounts?.dark||editions.filter(item=>item.style==='dark').length;
     if(config.schedule?.enabled){$('cadence').textContent='每日自动更新';$('schedule-note').textContent='每日20:00开始更新';$('generation-note').textContent='两种版式分别更新，往期原图持续保留。';}
     const recent=reads.filter(d=>{const diff=(Date.parse(today())-Date.parse(d))/86400000;return diff>=0&&diff<7;}).length;
     $('reading-days').textContent=recent?`近7天，你已阅读${recent}天`:'每天5分钟，多懂一点';
@@ -59,9 +62,13 @@
     $('sponsor').innerHTML=config.sponsor&&safeLink(config.sponsor.url)?`<a class="sponsor" href="${esc(safeLink(config.sponsor.url))}" target="_blank" rel="noopener noreferrer"><small>合作推广</small><h3>${esc(config.sponsor.title)}</h3><p>${esc(config.sponsor.description)}</p><span>了解详情 ↗</span></a>`:'';
     renderArchive();
   }
+  function renderLatestSwitch(){
+    let row=$('latest-switch');if(!row){row=document.createElement('div');row.id='latest-switch';row.className='latest-switch';$('today').prepend(row);}
+    const current=latest();row.innerHTML=styles.map(style=>{const e=editions.find(item=>item.style===style);return e?`<button data-hero-style="${style}" class="${current?.style===style?'active':''}" aria-pressed="${current?.style===style}">${labels[style]} <time>${shortDate(e.date)}</time>${e.date===today()?'<b>今日</b>':'<small>最新一期</small>'}</button>`:'';}).join('')+'<button data-action="refresh-now" class="refresh-now">刷新 ↻</button>';
+  }
   function card(e){
     const marked=saved.includes(e.id);
-    return `<article class="card"><button class="card-image" data-open="${esc(e.id)}" aria-label="查看${esc(e.title)}"><img src="${esc(posterPath(e.thumbnail||e.image))}" alt="${esc(e.title)}资讯图" loading="lazy" decoding="async"><span class="image-date">${esc(e.date.slice(5).replace('-','.'))}</span></button><div class="card-copy"><div class="card-meta"><span class="tag">${esc(e.category)}</span><time datetime="${e.date}">${shortDate(e.date)}</time></div><button class="card-title" data-open="${esc(e.id)}"><h3>${esc(e.title)}</h3></button><p>${esc(e.summary)}</p><div class="card-bottom"><button data-open="${esc(e.id)}">阅读图解 →</button><button class="save" data-save="${esc(e.id)}" aria-label="${marked?'取消收藏':'收藏'}" aria-pressed="${marked}">${marked?'★':'☆'}</button></div></div></article>`;
+    return `<article class="card"><button class="card-image" data-open="${esc(e.id)}" aria-label="查看${esc(e.title)}"><img src="${esc(posterPath(e.thumbnail||e.image))}" alt="${esc(e.title)}资讯图" loading="lazy" decoding="async"><span class="image-date">${esc(e.date.slice(5).replace('-','.'))}</span></button><div class="card-copy"><div class="card-meta"><span class="tag">${esc(e.category)}</span><time datetime="${e.date}">${shortDate(e.date)}</time></div><button class="card-title" data-open="${esc(e.id)}"><h3>${esc(e.title)}</h3></button><p>${esc(e.summary)}</p><div class="card-bottom"><button data-open="${esc(e.id)}">阅读图解 →</button><button data-download="${esc(e.id)}" class="card-download">下载 ↓</button><button class="save" data-save="${esc(e.id)}" aria-label="${marked?'取消收藏':'收藏'}" aria-pressed="${marked}">${marked?'★':'☆'}</button></div></div></article>`;
   }
   function renderArchive(){
     const q=$('search').value.trim().toLowerCase(),m=$('month').value;
@@ -94,6 +101,8 @@
     $('reader-date').textContent=`${e.date.replaceAll('-','.')} · ${labels[e.style]} · ${e.category}`;
     showImage($('reader-image'),e,false);
     $('reader-summary').textContent=e.summary;
+    const filename=downloadName(e,false);let links=$('reader-downloads');if(!links){links=document.createElement('div');links.id='reader-downloads';links.className='reader-downloads';$('reader-summary').before(links);}
+    links.innerHTML=`<a href="${esc(posterPath(e.download||e.image))}" download="${esc(filename)}">直接下载${e.download?'高清JPG':'原图'} ↓</a><a href="${esc(posterPath(e.image))}" download="${esc(downloadName(e,true))}">下载PNG原图 ↓</a><a href="${esc(posterPath(e.image))}" target="_blank" rel="noopener noreferrer">浏览器打开原图 ↗</a><button data-action="retry-image">重试图片 ↻</button>`;
     $('reader-sources').innerHTML=(e.sources||[]).filter(s=>safeLink(s.url)).map(s=>`<a href="${esc(safeLink(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)} ↗</a>`).join('');
     const group=peers(e),index=group.findIndex(item=>item.id===e.id);
     $('position').textContent=`${labels[e.style]} · ${index+1} / ${group.length}`;
@@ -115,19 +124,15 @@
     const u=new URL('./',location.href);if(e)u.searchParams.set('id',e.id);
     try{if(navigator.share)await navigator.share({title:e?.title||'数据中心每日资讯',text:'蓝白图解、深色简报，每日自动更新。免费阅读，无需登录。',url:u.href});else if(navigator.clipboard){await navigator.clipboard.writeText(u.href);message('网址已复制，可以发到微信或给朋友');}else{window.prompt('复制网址发给朋友',u.href);}}catch(err){if(err.name!=='AbortError')message('请复制浏览器地址栏的网址分享');}
   }
-  async function download(e){
-    if(!e)return;const url=posterPath(e.image),name=`数据中心每日资讯_${e.date}_${labels[e.style]}.${e.image.split('.').pop()}`;
+  function downloadName(e,original){const path=original?e.image:(e.download||e.image);return `数据中心每日资讯_${e.date}_${labels[e.style]}.${path.split('.').pop().split('?')[0]}`;}
+  function download(e){
+    if(!e)return;const url=posterPath(e.download||e.image),name=downloadName(e,false);if(!url){message('图片地址不可用，请刷新后重试');return;}
     if(window.NativeDaily&&typeof window.NativeDaily.saveImage==='function'){
-      window.NativeDaily.saveImage(url,name);return;
+      try{window.NativeDaily.saveImage(url,name);message('正在保存到安卓相册，请留意系统结果；未成功可使用原图下载链接');return;}catch{}
     }
-    message('正在准备原图…');
-    try{
-      const response=await fetch(url);if(!response.ok)throw Error('download');
-      const blob=await response.blob(),file=new File([blob],name,{type:blob.type||'image/png'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:e.title});return;}
-      const object=URL.createObjectURL(blob),a=document.createElement('a');a.href=object;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(object),60000);
-      message(/Android/i.test(navigator.userAgent)?'若没有保存提示，请安装新版安卓软件后重试':'已发起原图下载');
-    }catch(err){if(err.name!=='AbortError')message('下载未完成，请检查网络后重试');}
+    // Keep the user gesture intact. A real same-origin download is not a share-sheet action.
+    const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    message(/iPad|iPhone|iPod/.test(navigator.userAgent)?'已发起下载；Safari可在下载列表查看，或打开原图后长按存入照片':'已发起下载，请查看系统下载通知或下载列表');
   }
   let readerScale=1,pinch=null,lastTap=0;
   function setScale(value,cx,cy){
@@ -150,6 +155,8 @@
   function reset(){category='全部';onlySaved=false;$('search').value='';$('month').value='';resetLimits();render();}
   document.addEventListener('click',ev=>{
     const t=ev.target.closest('button,a');if(!t)return;
+    if(t.dataset.download){download(editions.find(e=>e.id===t.dataset.download));return;}
+    if(t.dataset.heroStyle){heroStyle=t.dataset.heroStyle;render();return;}
     if(t.dataset.open){open(editions.find(e=>e.id===t.dataset.open));return;}
     if(t.dataset.save){bookmark(t.dataset.save);return;}
     if(t.dataset.category){category=t.dataset.category;resetLimits();render();return;}
@@ -158,6 +165,8 @@
       case 'open-latest':open(latest());break;case 'save-latest':download(latest());break;case 'close':close();break;
       case 'zoom':if(selected)upgradeOriginal($('reader-image'),selected);setScale(zoom?1:3);break;
       case 'save-selected':download(selected);break;case 'bookmark':if(selected)bookmark(selected.id);break;
+      case 'retry-image':if(selected){$('reader-image').dataset.key='';showImage($('reader-image'),selected,false);}break;
+      case 'refresh-now':void refresh(true);break;
       case 'share-site':void share();break;case 'share-selected':void share(selected);break;
       case 'older':if(selected){const group=peers(selected);open(group[group.findIndex(e=>e.id===selected.id)+1]);}break;
       case 'newer':if(selected){const group=peers(selected);open(group[group.findIndex(e=>e.id===selected.id)-1]);}break;
@@ -174,7 +183,8 @@
   function apply(data){
     const snapshot=JSON.stringify([data.editions,data.config]);if(snapshot===lastSnapshot)return;lastSnapshot=snapshot;
     if(!Array.isArray(data.editions)||!data.editions.length)return;
-    editions=data.editions.map(e=>({...e,id:e.id||e.date+'-'+(e.style||'dark'),style:e.style||'dark'})).sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id));
+    bootstrapCounts=data.bootstrap?data.counts:null;
+    editions=data.editions.map(e=>({...e,id:e.id||e.date+'-'+(e.style||'dark'),style:e.style||'dark'})).sort((a,b)=>b.date.localeCompare(a.date)||(b.updatedAt||'').localeCompare(a.updatedAt||'')||a.id.localeCompare(b.id));
     config=data.config||{products:[]};
     const migrated=[...new Set(saved.flatMap(value=>/^\d{4}-\d{2}-\d{2}$/.test(value)?editions.filter(e=>e.date===value).map(e=>e.id):[value]))];
     if(JSON.stringify(migrated)!==JSON.stringify(saved)){saved=migrated;persist('dc-daily-saved',saved);}
@@ -189,8 +199,12 @@
     if(e){requestedHandled=true;open(e);}
   }
   openRequested();
-  async function refresh(){try{const r=await fetch(`./data.json?t=${Date.now()}`,{cache:'no-store'});if(r.ok){apply(await r.json());openRequested();}}catch{}}
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+  let refreshing=false,lastRefresh=0;
+  async function refresh(manual=false){if(refreshing||(!manual&&Date.now()-lastRefresh<3000))return;refreshing=true;lastRefresh=Date.now();try{const r=await fetch(`./data.json?t=${Date.now()}`,{cache:'no-store',signal:typeof AbortSignal!=='undefined'&&AbortSignal.timeout?AbortSignal.timeout(12000):undefined});if(!r.ok)throw Error('refresh');apply(await r.json());openRequested();$('sync-note').textContent='已检查更新 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Shanghai'});if(manual)message('已检查最新图片');}catch{if(manual)message('网络暂不可用，已保留当前图片，可稍后重试');}finally{refreshing=false;}}
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
   window.addEventListener('daily-resume',()=>{void refresh();});
-  void refresh();setInterval(()=>{if(document.visibilityState==='visible')void refresh();},120000);
+  window.addEventListener('pageshow',()=>{void refresh();});window.addEventListener('online',()=>{void refresh(true);});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refresh();});
+  void refresh();setInterval(()=>{if(document.visibilityState==='visible')void refresh();},30000);
 })();
+

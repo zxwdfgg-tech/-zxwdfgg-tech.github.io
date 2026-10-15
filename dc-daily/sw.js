@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='dc-reader-fast-v1',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
+const VERSION='dc-reader-fast-v3-20261015',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
 const BASE=new URL('./',self.location.href),INDEX=new URL('index.html',BASE).href;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
@@ -12,8 +12,13 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
   await self.skipWaiting();
 })()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
-  for(const key of await caches.keys())if(key.startsWith('dc-reader-fast-')&&key!==SHELL&&key!==IMAGES)await caches.delete(key);
+  let migrated=false;
+  for(const key of await caches.keys())if(key.startsWith('dc-reader-fast-')&&key!==SHELL&&key!==IMAGES){migrated=true;await caches.delete(key);}
   await self.clients.claim();
+  // Older readers have no controllerchange listener. Reload once on this version's activation.
+  if(migrated)for(const client of await self.clients.matchAll({type:'window'})){
+    const u=new URL(client.url);if(u.origin===BASE.origin&&u.pathname.startsWith(BASE.pathname))await client.navigate(client.url);
+  }
 })()));
 async function save(cache,key,response,max){
   if(!response.ok||response.type==='opaque')return;
@@ -24,7 +29,7 @@ self.addEventListener('fetch',event=>{
   const req=event.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==BASE.origin||!url.pathname.startsWith(BASE.pathname))return;
   if(url.pathname.endsWith('/data.json')){
-    event.respondWith((async()=>{const c=await caches.open(SHELL);try{const r=await fetch(req);if(r.ok)await save(c,new URL('data.json',BASE).href,r);return r;}catch(e){const old=await c.match(new URL('data.json',BASE).href);if(old)return old;throw e;}})());return;
+    event.respondWith((async()=>{const c=await caches.open(SHELL);try{const r=await fetch(req);if(!r.ok)throw Error('Data unavailable');await save(c,new URL('data.json',BASE).href,r);return r;}catch(e){const old=await c.match(new URL('data.json',BASE).href);if(old)return old;throw e;}})());return;
   }
   if(req.mode==='navigate'){
     const network=(async()=>{const c=await caches.open(SHELL);const r=await fetch(req);await save(c,INDEX,r);return r;})();
@@ -38,3 +43,4 @@ self.addEventListener('fetch',event=>{
     event.respondWith((async()=>{const c=await caches.open(SHELL);const old=await c.match(req);if(old)return old;const r=await fetch(req);await save(c,req,r,20);return r;})());
   }
 });
+

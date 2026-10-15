@@ -78,23 +78,37 @@ def build(destination):
     used.update(_optimizer.optimize(target, editions))
     for local in assets.iterdir():
         if local.is_file() and f'images/{local.name}' not in used: local.unlink()
-    editions.sort(key=lambda e:e['date'], reverse=True)
+    editions.sort(key=lambda e:(e['date'],e.get('updatedAt','')), reverse=True)
     data = {'editions': editions, 'config': config, 'syncedAt': datetime.now(timezone.utc).isoformat()}
     body = fetch('/share/index.html').decode('utf-8')
     css = fetch('/share/styles.css')
     js = Path('dc-daily/app-fast.js').read_bytes()
     (target/'sw.js').write_bytes(Path('dc-daily/sw.js').read_bytes())
-    latest = next((e for e in editions if e.get('style') == 'blue-white'), editions[0])
+    latest = editions[0]
     poster = '<button class="poster-button" data-action="open-latest" aria-label="查看高清资讯原图"><img src="' + html.escape(latest.get('placeholder') or latest['thumbnail'],quote=True) + '" alt="' + html.escape(latest['title'],quote=True) + '" fetchpriority="high"></button>'
     body = body.replace('<!--LATEST-->', poster)
     body = body.replace('正在读取最新资讯…', html.escape(latest['title']))
     body = body.replace('<p id="latest-summary"></p>', '<p id="latest-summary">' + html.escape(latest['summary']) + '</p>')
     body = body.replace('<time id="latest-date"></time>', '<time id="latest-date">' + html.escape(latest['date'].replace('-','.')) + '</time>')
     body = body.replace('<strong id="edition-count">—</strong>', '<strong id="edition-count">' + str(len(editions)) + '</strong>')
-    serial = json.dumps(data, ensure_ascii=False, separators=(',',':')).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
+    # Render immediately from a small recent bootstrap; fetch the complete archive in the background.
+    recent=[e for style in ['blue-white','dark'] for e in [x for x in editions if x.get('style')==style][:4]]
+    recent.sort(key=lambda e:(e['date'],e.get('updatedAt','')),reverse=True)
+    initial={'editions':recent,'config':config,'bootstrap':True,'counts':{'total':len(editions),**{s:sum(e.get('style')==s for e in editions) for s in ['blue-white','dark']}}}
+    serial = json.dumps(initial, ensure_ascii=False, separators=(',',':')).replace('<','\\u003c').replace('>','\\u003e').replace('&','\\u0026')
     body = re.sub(r'(<script id="initial-data" type="application/json">).*?(</script>)', lambda m:m[1]+serial+m[2], body, flags=re.S)
     body = body.replace('./styles.css', './styles.css?v=' + hashlib.sha256(css).hexdigest()[:12])
     body = body.replace('./app.js', './app.js?v=' + hashlib.sha256(js).hexdigest()[:12])
+    fixes=Path('dc-daily/reader-fixes.css').read_bytes()
+    body=body.replace('</head>','<link rel="stylesheet" href="./reader-fixes.css?v='+hashlib.sha256(fixes).hexdigest()[:12]+'"></head>')
+    (target/'reader-fixes.css').write_bytes(fixes)
+    body=body.replace('保存图片 ↓','保存高清图 ↓')
+    switches='<div id="latest-switch" class="latest-switch">'
+    for style,label in [('blue-white','蓝白竖版'),('dark','深色横版')]:
+        record=next((e for e in editions if e.get('style')==style),None)
+        if record: switches+='<button data-hero-style="'+style+'" class="'+('active' if latest['style']==style else '')+'">'+label+' <time>'+record['date'][5:].replace('-','月')+'日</time></button>'
+    switches+='<button data-action="refresh-now" class="refresh-now">刷新 ↻</button></div>'
+    body=body.replace('<section class="latest-section" id="today">','<section class="latest-section" id="today">'+switches)
     (target/'index.html').write_text(body,encoding='utf-8')
     (target/'data.json').write_text(json.dumps(data, ensure_ascii=False),encoding='utf-8')
     (target/'manifest.json').write_text(json.dumps(manifest),encoding='utf-8')
@@ -105,4 +119,5 @@ def build(destination):
 
 if __name__ == '__main__':
     build(sys.argv[1] if len(sys.argv)>1 else 'daily-cache')
+
 
