@@ -46,6 +46,7 @@
     let button=document.querySelector('.poster-button');
     if(!button){button=document.createElement('button');button.className='poster-button';button.dataset.action='open-latest';button.innerHTML='<img alt="">';document.querySelector('.latest-poster').prepend(button);}
     button.setAttribute('aria-label',`放大查看${e.title}`);
+    button.dataset.downloadUrl=posterPath(e.download||e.image);button.dataset.downloadName=downloadName(e,false);
     showImage(button.querySelector('img'),e,true);
     $('edition-count').textContent=bootstrapCounts?.total||editions.length;
     $('blue-total').textContent=bootstrapCounts?.['blue-white']||editions.filter(item=>item.style==='blue-white').length;
@@ -125,14 +126,36 @@
     try{if(navigator.share)await navigator.share({title:e?.title||'数据中心每日资讯',text:'蓝白图解、深色简报，每日自动更新。免费阅读，无需登录。',url:u.href});else if(navigator.clipboard){await navigator.clipboard.writeText(u.href);message('网址已复制，可以发到微信或给朋友');}else{window.prompt('复制网址发给朋友',u.href);}}catch(err){if(err.name!=='AbortError')message('请复制浏览器地址栏的网址分享');}
   }
   function downloadName(e,original){const path=original?e.image:(e.download||e.image);return `数据中心每日资讯_${e.date}_${labels[e.style]}.${path.split('.').pop().split('?')[0]}`;}
-  function download(e){
-    if(!e)return;const url=posterPath(e.download||e.image),name=downloadName(e,false);if(!url){message('图片地址不可用，请刷新后重试');return;}
+  const appUpdateUrl='https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/raw/refs/heads/main/dc-daily/updates/DataCenterDaily_v1.3.apk';
+  let saveResultTimer,lastSaveEdition;
+  function saveNotice(text,e,upgrade){
+    let panel=$('save-status-panel');if(!panel){panel=document.createElement('div');panel.id='save-status-panel';panel.className='save-status-panel';panel.setAttribute('role','status');}
+    const parent=$('reader').open?document.querySelector('.reader-content'):document.querySelector('.latest-poster');parent.prepend(panel);
+    panel.innerHTML=`<strong></strong><div class="save-status-actions">${e?`<a href="${esc(posterPath(e.download||e.image))}" target="_blank" rel="noopener noreferrer">打开图片</a>`:''}${upgrade?`<a href="${appUpdateUrl}" target="_blank" rel="noopener noreferrer">下载安卓1.3修复版 ↗</a>`:''}<button data-action="dismiss-save-status">关闭提示</button></div>`;
+    panel.querySelector('strong').textContent=text;
+  }
+  window.addEventListener('daily-save-result',event=>{
+    const result=event.detail||{};if(!['saving','saved','error','waiting','cancelled'].includes(result.status)||typeof result.message!=='string')return;
+    clearTimeout(saveResultTimer);saveNotice(result.message,lastSaveEdition,false);
+  });
+  function download(e,original=false){
+    if(!e)return;lastSaveEdition=e;clearTimeout(saveResultTimer);
+    const url=posterPath(original?e.image:(e.download||e.image)),name=downloadName(e,original);if(!url){message('图片地址不可用，请刷新后重试');return;}
     if(window.NativeDaily&&typeof window.NativeDaily.saveImage==='function'){
-      try{window.NativeDaily.saveImage(url,name);message('正在保存到安卓相册，请留意系统结果；未成功可使用原图下载链接');return;}catch{}
+      try{
+        const version=typeof window.NativeDaily.getVersion==='function'?window.NativeDaily.getVersion():'';
+        saveNotice('正在交给安卓保存；请查看App的保存进度和结果。',e,!version);
+        window.NativeDaily.saveImage(url,name);
+        saveResultTimer=setTimeout(()=>saveNotice('尚未收到保存结果。请查看App底部提示；旧版可安装1.3修复版后重试。',e,true),version?95000:8000);
+        return;
+      }catch{saveNotice('App保存接口调用失败，请更新修复版或用浏览器下载。',e,true);return;}
+    }
+    if(/Android/i.test(navigator.userAgent)&&(/\bwv\b|DataCenterDaily\//i.test(navigator.userAgent)||window.NativeApp)){
+      saveNotice('当前App未接入相册保存，点击不会自动存图。请安装1.3修复版后再保存。',e,true);return;
     }
     // Keep the user gesture intact. A real same-origin download is not a share-sheet action.
     const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
-    message(/iPad|iPhone|iPod/.test(navigator.userAgent)?'已发起下载；Safari可在下载列表查看，或打开原图后长按存入照片':'已发起下载，请查看系统下载通知或下载列表');
+    message(/iPad|iPhone|iPod/.test(navigator.userAgent)?'已发起下载；Safari可在下载列表查看，或打开原图后长按存入照片':'已发送到系统下载，请查看下载列表；浏览器下载不会自动存入相册');
   }
   let readerScale=1,pinch=null,lastTap=0;
   function setScale(value,cx,cy){
@@ -155,6 +178,7 @@
   function reset(){category='全部';onlySaved=false;$('search').value='';$('month').value='';resetLimits();render();}
   document.addEventListener('click',ev=>{
     const t=ev.target.closest('button,a');if(!t)return;
+    if(t.matches('#reader-downloads a[download]')&&window.NativeDaily){ev.preventDefault();download(selected,t===t.parentElement.querySelectorAll('a[download]')[1]);return;}
     if(t.dataset.download){download(editions.find(e=>e.id===t.dataset.download));return;}
     if(t.dataset.heroStyle){heroStyle=t.dataset.heroStyle;render();return;}
     if(t.dataset.open){open(editions.find(e=>e.id===t.dataset.open));return;}
@@ -162,6 +186,7 @@
     if(t.dataset.category){category=t.dataset.category;resetLimits();render();return;}
     if(t.dataset.more){limits[t.dataset.more]+=8;renderArchive();return;}
     switch(t.dataset.action){
+      case 'dismiss-save-status':$('save-status-panel')?.remove();break;
       case 'open-latest':open(latest());break;case 'save-latest':download(latest());break;case 'close':close();break;
       case 'zoom':if(selected)upgradeOriginal($('reader-image'),selected);setScale(zoom?1:3);break;
       case 'save-selected':download(selected);break;case 'bookmark':if(selected)bookmark(selected.id);break;

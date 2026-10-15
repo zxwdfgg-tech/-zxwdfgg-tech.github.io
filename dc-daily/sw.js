@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='dc-reader-fast-v4-20261015',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
+const VERSION='dc-reader-fast-v5-20261015',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
 const BASE=new URL('./',self.location.href),INDEX=new URL('index.html',BASE).href;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
