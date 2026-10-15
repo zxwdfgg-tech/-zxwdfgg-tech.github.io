@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='dc-reader-fast-v3-20261015',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
+const VERSION='dc-reader-fast-v4-20261015',SHELL=VERSION+'-shell',IMAGES=VERSION+'-images';
 const BASE=new URL('./',self.location.href),INDEX=new URL('index.html',BASE).href;
 self.addEventListener('install',event=>event.waitUntil((async()=>{
   try{
@@ -17,7 +17,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
   await self.clients.claim();
   // Older readers have no controllerchange listener. Reload once on this version's activation.
   if(migrated)for(const client of await self.clients.matchAll({type:'window'})){
-    const u=new URL(client.url);if(u.origin===BASE.origin&&u.pathname.startsWith(BASE.pathname))await client.navigate(client.url);
+    const u=new URL(client.url);if(u.origin===BASE.origin&&u.pathname.startsWith(BASE.pathname))void client.navigate(client.url).catch(()=>{});
   }
 })()));
 async function save(cache,key,response,max){

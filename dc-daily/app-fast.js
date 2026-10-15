@@ -13,7 +13,7 @@
   let limits={'blue-white':4,dark:4},saved=stored('dc-daily-saved'),reads=stored('dc-daily-reads'),toastTimer;
   const latest = () => (heroStyle ? editions.find(e=>e.style===heroStyle) : editions[0]) || editions[0];
   const peers = e => editions.filter(item=>item.style===e.style);
-  function message(text){$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
+  function message(text){const host=$('reader').open?$('reader'):document.body;if($('toast').parentElement!==host)host.append($('toast'));$('toast').textContent=text;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,5000);}
   function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{message('浏览器未允许保存记录');}}
   function safeLink(value){try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
   function posterPath(value){try{const u=new URL(value,location.href);return u.origin===location.origin?u.href:'';}catch{return '';}}
