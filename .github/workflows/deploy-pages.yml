@@ -106,6 +106,9 @@ jobs:
       - name: Install image optimization dependency
         run: python -m pip install 'Pillow==11.3.0'
 
+      - name: Validate paired daily publication rules
+        run: python scripts/test-edition-pair.py
+
       - name: Build the public daily infographic website
         run: |
           # Verify the reader fixes before publication. Never report a stale mirror as a successful update.

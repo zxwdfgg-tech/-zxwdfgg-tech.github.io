@@ -42,6 +42,16 @@ def image_type(raw):
     if raw[:4] == b'RIFF' and raw[8:12] == b'WEBP': return '.webp'
     raise ValueError('Asset is not a supported image')
 
+def validate_latest_pair(editions):
+    """Publish only when both reader styles have the same latest issue date."""
+    latest = {style: max((e['date'] for e in editions if e.get('style') == style), default=None)
+              for style in ('blue-white', 'dark')}
+    if None in latest.values() or latest['blue-white'] != latest['dark']:
+        raise ValueError('Latest issue pair is incomplete: ' + json.dumps(latest) +
+                         '. Complete the missing style before publishing; retain the live website.')
+    return latest['blue-white']
+
+
 def build(destination):
     target = Path(destination).resolve()
     target.mkdir(parents=True, exist_ok=True)
@@ -50,6 +60,7 @@ def build(destination):
     editions = json.loads(fetch('/api/editions'))['editions']
     config = json.loads(fetch('/api/config'))
     if not editions: raise ValueError('No editions to publish')
+    validate_latest_pair(editions)
     previous = {}
     if (target / 'manifest.json').exists():
         try: previous = json.loads((target / 'manifest.json').read_text())
@@ -119,5 +130,6 @@ def build(destination):
 
 if __name__ == '__main__':
     build(sys.argv[1] if len(sys.argv)>1 else 'daily-cache')
+
 
 
