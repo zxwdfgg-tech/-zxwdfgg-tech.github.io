@@ -127,6 +127,14 @@ jobs:
           mkdir -p site/datacenter
           cp -R datacenter/. site/datacenter/
 
+      - name: Add public electrical workbench
+        run: |
+          node --check electric-lab/app.js
+          node --check electric-lab/engine.js
+          node --check electric-lab/router.js
+          mkdir -p site/electric-lab
+          cp -R electric-lab/. site/electric-lab/
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
