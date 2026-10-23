@@ -62,7 +62,7 @@ footer a{text-underline-offset:2px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#102b3e;color:#fff;border-radius:10px;padding:10px 17px;font-size:13px;z-index:50;display:none;box-shadow:0 8px 24px #0003;min-width:max-content;max-width:92vw}
 @media(max-width:540px){.hero-title{font-size:29px}.entry{padding:13px 14px}.filter-row .lab{font-size:12px}.chip{font-size:13px;padding:4px 10px}.eyebrow{font-size:12px}.chapter-heading{font-size:18px}.filters{padding:10px 0}.owner{font-size:13px}}
 @media(print){.filters,.theme-toggle,.deep,.toast,.more-items,.owner{display:none!important}.entry{break-inside:avoid}body{background:white;color:black}header{background:white;color:black}}
-</style>
+.filter-note{font-size:12px;color:var(--sub);margin:7px 0 2px 4px}.chip[hidden]{display:none!important}.province-row .chip{white-space:nowrap}</style>
 </head>
 <body>
 <header>
@@ -79,10 +79,14 @@ footer a{text-underline-offset:2px}
 <div class="wrap">
 <input type="search" id="query" class="search" placeholder="搜关键词：变压器、开关柜、广东、奥克斯、中标……" aria-label="搜索所有档案">
 <div class="filter-row" id="year-row"><span class="lab">公告年份</span></div>
+<div class="filter-row" id="owner-row"><span class="lab">采购单位</span></div>
+<div class="filter-row province-row" id="province-row"><span class="lab">省份地区</span></div>
+<button type="button" id="provinces-toggle" class="fmore" aria-expanded="false">展开全部省份 ↓</button>
+<p class="filter-note">只将明确归属某省的项目算进该省；全国与跨省框架单独归档。广州、深圳等城市自动归入对应省份。</p>
 <div class="filter-row" id="cat-row"><span class="lab">设备专题</span></div>
 <div class="filter-row extra" id="status-row"><span class="lab">公告状态</span></div>
 <div class="filter-row extra" id="type-row"><span class="lab">记录类型</span></div>
-<div class="filter-row extra" id="region-row"><span class="lab">所在地区</span></div>
+
 <button type="button" class="fmore" id="showfilters">更多筛选</button>
 </div>
 </div>
@@ -98,18 +102,38 @@ footer a{text-underline-offset:2px}
 </main>
 <div id="toast" class="toast" role="status"></div>
 <script src="./data.js"></script>
+<script src="./expansion.js"></script>
+<script src="./province-data.js"></script>
 <script>
 (function(){
 'use strict';
-var rows=Array.isArray(window.POWER_ARCHIVE)?window.POWER_ARCHIVE:[];
+var rows=[].concat(Array.isArray(window.POWER_ARCHIVE)?window.POWER_ARCHIVE:[],Array.isArray(window.POWER_EXPANSION)?window.POWER_EXPANSION:[],Array.isArray(window.POWER_PROVINCE_RECORDS)?window.POWER_PROVINCE_RECORDS:[]);
+var provincesMain=['北京','天津','河北','山西','内蒙古','辽宁','吉林','黑龙江','上海','江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南','广东','广西','海南','重庆','四川','贵州','云南','西藏','陕西','甘肃','青海','宁夏','新疆'];
+var hot=['陕西','广东','江苏','山东','浙江','河南','河北','四川'];
+var provinces=hot.concat(provincesMain.filter(function(p){return hot.indexOf(p)<0}),['跨省','全国','海外']);
+var cities={深圳:'广东',广州:'广东',东莞:'广东',佛山:'广东',珠海:'广东',中山:'广东',西安:'陕西',咸阳:'陕西',渭南:'陕西',榆林:'陕西',宝鸡:'陕西',南京:'江苏',苏州:'江苏',无锡:'江苏',杭州:'浙江',宁波:'浙江',济南:'山东',青岛:'山东',郑州:'河南',成都:'四川',武汉:'湖北',长沙:'湖南',福州:'福建',厦门:'福建',合肥:'安徽',南昌:'江西',贵阳:'贵州',昆明:'云南',南宁:'广西',海口:'海南',拉萨:'西藏',西宁:'青海',银川:'宁夏',乌鲁木齐:'新疆',兰州:'甘肃',沈阳:'辽宁',大连:'辽宁',长春:'吉林',哈尔滨:'黑龙江',太原:'山西',石家庄:'河北'};
+function pickProvince(x){
+ var r=String(x.province||x.region||'');
+ if(provincesMain.indexOf(r)>=0)return r;
+ if(cities[r])return cities[r];
+ if(r.indexOf('全国')>=0)return '全国';
+ if(/南方五省|跨省|多省/.test(r))return '跨省';
+ if(/海外|柬埔寨|圭亚那/.test(r))return '海外';
+ for(var i=0;i<provincesMain.length;i++)if(r.indexOf(provincesMain[i])>=0)return provincesMain[i];
+ for(var c in cities)if(r.indexOf(c)>=0)return cities[c];
+ return '跨省';
+}
+rows.forEach(function(x){if(!x.owner)x.owner=x.type==='统计发布'||x.cat==='电力数据'?'国家能源局':'南方电网';x.province=pickProvince(x)});
+rows.sort(function(a,b){return b.date.localeCompare(a.date)});
+var provinceExpanded=false;
 var meta=window.POWER_META||{};
-var chosen={year:'',cat:'',status:'',type:'',region:''};
+var chosen={year:'',cat:'',status:'',type:'',owner:'',province:''};
 var expanded=false,opened={};
 var toast=document.getElementById('toast');
-var yearGroup=['2026','2025'],cats=['配网设备','主网设备','线缆材料','厂商格局','监测仪表','电力数据'];
-var stat=['招标中','历史招标','正式中标','中标候选','官方数据'];
-var types=['公告','中标标包','品类索引','统计发布'];
-var regions=['全国','南方五省','广东','广州','深圳','广西','云南','贵州','海南'];
+var yearGroup=['2026','2025'],cats=['配网设备','主网设备','线缆材料','厂商格局','监测仪表','电力数据','储能新能源','UPS及备用电源','行业分析'];
+var stat=['招标中','采购进行中','历史招标','正式中标','中标候选','中标及预中标','披露中标结果','采购结果','官方数据','行业分析'];
+var types=['公告','中标标包','省级标包','品类索引','统计发布','行业分析'];
+var owners=['国家电网','南方电网','国家能源集团','华能集团','大唐集团','华电集团','国家电投','中国电建','中广核','华润集团','国家能源局'];
 var byId=function(id){return document.getElementById(id)};
 function h(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function notify(msg){toast.textContent=msg;toast.style.display='block';clearTimeout(notify.t);notify.t=setTimeout(function(){toast.style.display='none'},2500)}
@@ -117,19 +141,29 @@ function copy(s){if(navigator.clipboard&&navigator.clipboard.writeText){navigato
 function rowButtons(id,key,vals){var el=byId(id);el.querySelectorAll('button').forEach(function(x){x.remove()});[['','全部']].concat(vals.map(function(v){return [v,v]})).forEach(function(p){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=p[1];b.setAttribute('aria-pressed',String(chosen[key]===p[0]));b.addEventListener('click',function(){chosen[key]=p[0];render();syncChips();window.scrollTo({top:0,behavior:'auto'})});el.appendChild(b)})}
 function syncChips(){
 rowButtons('year-row','year',yearGroup);
+rowButtons('owner-row','owner',owners);
+rowButtons('province-row','province',provinces);
+byId('province-row').querySelectorAll('.chip').forEach(function(b,i){
+var p=i===0?'':provinces[i-1];var hide=!provinceExpanded&&i>hot.length&&p!==chosen.province;
+b.hidden=hide;
+if(i>0){var n=rows.filter(function(x){return x.province===p}).length;b.textContent=p+' ('+n+')'}
+});
+byId('provinces-toggle').textContent=provinceExpanded?'收起省份 ↑':'展开全部31省份及其他地区 ↓';
+byId('provinces-toggle').setAttribute('aria-expanded',String(provinceExpanded));
 rowButtons('cat-row','cat',cats);
 rowButtons('status-row','status',stat);
 rowButtons('type-row','type',types);
-rowButtons('region-row','region',regions);
+
 }
 function matches(x){
 if(chosen.year && String(x.year)!==chosen.year)return false;
 if(chosen.cat && x.cat!==chosen.cat)return false;
 if(chosen.status && x.status!==chosen.status)return false;
 if(chosen.type && x.type!==chosen.type)return false;
-if(chosen.region && x.region!==chosen.region)return false;
+if(chosen.owner && x.owner!==chosen.owner)return false;
+if(chosen.province && x.province!==chosen.province)return false;
 var q=byId('query').value.trim().toLowerCase();
-if(q){var words=q.split(/\s+/).filter(Boolean),txt=[x.title,x.summary,x.analysis,x.source,x.cat,x.region,x.status,x.type,x.date,String(x.projectYear)].join(' ').toLowerCase();if(!words.every(function(word){return txt.indexOf(word)!==-1}))return false}
+if(q){var words=q.split(/\s+/).filter(Boolean),txt=[x.title,x.summary,x.analysis,x.source,x.owner,x.cat,x.region,x.province,x.status,x.type,x.date,String(x.projectYear)].join(' ').toLowerCase();if(!words.every(function(word){return txt.indexOf(word)!==-1}))return false}
 return true;
 }
 var chapterDefs=[
@@ -178,13 +212,14 @@ byId('total').textContent=rows.length+' 条结构化记录（包括独立公告�
 byId('wechat').textContent=meta.wechat||'ydncg2024';byId('wechatfooter').textContent=meta.wechat||'ydncg2024';
 byId('copywechat').onclick=function(){copy(meta.wechat||'ydncg2024')};
 byId('query').addEventListener('input',render);
-byId('reset').onclick=function(){chosen={year:'',cat:'',status:'',type:'',region:''};byId('query').value='';opened={};syncChips();render()};
+byId('reset').onclick=function(){chosen={year:'',cat:'',status:'',type:'',owner:'',province:''};byId('query').value='';opened={};syncChips();render()};
+byId('provinces-toggle').onclick=function(){provinceExpanded=!provinceExpanded;syncChips()};
 byId('showfilters').onclick=function(){expanded=!expanded;byId('filters').classList.toggle('expanded',expanded);this.textContent=expanded?'收起筛选':'更多筛选'};
 function themeSet(t){if(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('power-theme',t)}catch(e){}}}
 try{themeSet(localStorage.getItem('power-theme')||'')}catch(e){}
 byId('theme').onclick=function(){var isDark=getComputedStyle(document.body).backgroundColor==='rgb(15, 27, 35)';themeSet(isDark?'light':'dark')};
 syncChips();render();
-if(location.hash&&/^#E\d{3}$/.test(location.hash)){var found=rows.find(function(x){return '#'+x.id===location.hash});if(found){chosen.type=found.type;syncChips();opened={0:true,1:true,2:true,3:true,4:true,5:true};render();setTimeout(function(){var e=byId(found.id);if(e){e.scrollIntoView();e.querySelector('details').open=true}},250)}}
+if(location.hash&&/^#[ENP]\d{3}$/.test(location.hash)){var found=rows.find(function(x){return '#'+x.id===location.hash});if(found){chosen.type=found.type;syncChips();opened={0:true,1:true,2:true,3:true,4:true,5:true,6:true};render();setTimeout(function(){var e=byId(found.id);if(e){e.scrollIntoView();e.querySelector('details').open=true}},250)}}
 })();
 </script>
 </body>
