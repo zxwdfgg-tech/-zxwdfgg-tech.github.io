@@ -2,226 +2,112 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#102c3e">
-<title>电力设备情报库 · 2025—2026 中国电网采购与中标全档案</title>
-<meta name="description" content="电力小张整理的2025—2026年中国电力设备招标、中标、设备物资、厂商份额、官方用电数据情报档案。按年份、品类、状态检索，每条附来源。">
-<meta property="og:title" content="电力设备情报库 · 中国电网采购与中标全档案">
-<meta property="og:description" content="查招标、看中标、研究电力设备供应商。2025—2026年公开资料结构化整理，附官方原文。">
-<style>
-:root{
-  --canvas:#f7f4ee;--paper:#fff;--ink:#1d2b35;--sub:#60707a;--edge:#e5ded2;--navy:#102b3c;--amber:#c18a20;--pale:#faf0d9;--pill:#edf1f3;--active:#102b3c;--act-ink:#fff;--okay:#137b52;--warn:#925d2f
-}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--canvas:#0f1b23;--paper:#172630;--ink:#e6edf0;--sub:#a0b0ba;--edge:#2b3c47;--navy:#f3be58;--amber:#f2b74c;--pale:#332b19;--pill:#243643;--active:#f2b74c;--act-ink:#15222a;--okay:#46c08a;--warn:#d69b68}}
-:root[data-theme="dark"]{--canvas:#0f1b23;--paper:#172630;--ink:#e6edf0;--sub:#a0b0ba;--edge:#2b3c47;--navy:#f3be58;--amber:#f2b74c;--pale:#332b19;--pill:#243643;--active:#f2b74c;--act-ink:#15222a;--okay:#46c08a;--warn:#d69b68}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--canvas);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}a{color:inherit}button,input{font:inherit}button{cursor:pointer}
-.wrap{width:min(960px,100%);padding:0 16px;margin:0 auto}
-header{background:#102b3e;color:#f5f0e5;padding:29px 0 25px;position:relative}
-.hero-title{font-size:30px;font-weight:760;line-height:1.28;margin:5px 0 8px;letter-spacing:.15px}
-.eyebrow{font-size:14px;letter-spacing:2px;font-weight:750;color:#f2b53a}
-.slogan{margin:0;font-size:17px}.slogan strong{color:#f2b53a}
-.hero-meta{margin-top:10px;color:#ced5d9;font-size:13px;line-height:1.8}
-.hero-meta a{text-decoration:underline;text-underline-offset:2px;color:#fff}
-.owner{display:inline-flex;gap:5px;align-items:center;margin-top:9px;border:1px solid #96753b;border-radius:8px;padding:4px 10px;background:#283b43;color:#f5f0e5;font-size:14px}
-.owner b{color:#f2b53a}
-.owner button{background:none;border:0;color:#f2b53a;font-size:13px;text-decoration:underline;padding:0 1px}
-.theme-toggle{position:absolute;right:max(16px,calc((100vw - 927px)/2));top:15px;border:1px solid #71818b;background:transparent;color:#f5f0e5;border-radius:8px;padding:2px 8px;font-size:13px}
-.filters{background:var(--canvas);border-bottom:1px solid var(--edge);padding:12px 0}
-@media(min-width:760px){.filters{position:sticky;top:0;z-index:10}}
-.search{width:100%;background:var(--paper);border:1px solid var(--edge);border-radius:10px;padding:10px 12px;color:var(--ink);font-size:16px;outline-offset:2px}
-.filter-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
-.filter-row .lab{width:4.5em;flex:none;color:var(--sub);font-size:13px}
-.chip{border:0;border-radius:999px;padding:4px 11px;background:var(--pill);color:var(--ink);line-height:1.65;font-size:14px}
-.chip[aria-pressed="true"]{background:var(--active);color:var(--act-ink)}
-.extra{display:none}.filters.expanded .extra{display:flex}
-.fmore{margin-top:8px;color:var(--sub);font-size:13px;padding:0;border:0;background:transparent;text-decoration:underline}
-.countbar{margin:16px 0 8px;font-size:14px;color:var(--sub);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.countbar button,.link-text{font-size:14px;color:var(--sub);background:none;padding:0;border:0;text-decoration:underline}
-.chapter-heading{font-size:19px;line-height:1.4;margin:27px 0 7px;font-weight:750}
-.chapter-desc{font-size:14px;color:var(--sub);margin:0 0 11px;line-height:1.7}
-.entry{margin:10px 0;padding:14px 16px;background:var(--paper);border:1px solid var(--edge);border-radius:12px}
-.entry h3{font-size:17px;line-height:1.47;margin:0;font-weight:735;overflow-wrap:anywhere}
-.n{color:var(--amber);font-variant-numeric:tabular-nums;font-weight:800;margin-right:6px}
-.bags{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}
-.tag{color:var(--sub);font-size:12px;border-radius:6px;background:var(--pill);padding:1px 8px}
-.tag.authority{background:#147851;color:#fff}.tag.candidate{background:#97622e;color:#fff}.tag.outline{border:1px solid var(--edge);background:transparent}
-.explain{background:var(--pale);border-left:3px solid var(--amber);padding:8px 12px;border-radius:6px;margin:8px 0;line-height:1.72;font-size:15px;overflow-wrap:anywhere}
-.visit{margin:6px 0 3px;font-size:14px;line-height:1.7}.visit b{color:var(--amber);display:inline-block;margin-right:8px}
-.go{background:var(--paper);border:1px solid var(--edge);padding:2px 10px;border-radius:8px;text-decoration:none;display:inline-block;margin:2px 6px 2px 0;overflow-wrap:anywhere}
-.go:hover{border-color:var(--amber)}
-.entry details{margin-top:8px}.entry summary{font-size:14px;color:var(--sub);cursor:pointer;list-style:auto;min-height:25px}
-.item-field{margin:8px 0;font-size:15px;overflow-wrap:anywhere}.item-field b{color:var(--sub);display:inline-block;min-width:4.8em;font-weight:650}
-.deep{font-size:13px;display:flex;gap:17px;flex-wrap:wrap;margin-top:12px}.deep button,.deep a{border:none;background:transparent;color:var(--sub);padding:0;text-decoration:underline;font-size:13px}
-.verified{font-size:12px;color:var(--sub);padding:2px 0 0}.verified a{overflow-wrap:anywhere}
-.more-items{display:block;margin:14px auto 24px;background:var(--paper);border:1px solid var(--edge);border-radius:9px;padding:8px 22px;color:var(--ink);font-size:14px}
-.noresults{padding:48px 0;color:var(--sub);text-align:center}
-footer{padding:28px 0 50px;color:var(--sub);font-size:13px;border-top:1px solid var(--edge);margin-top:23px}
-footer p{margin:5px 0}
-footer b{color:var(--ink)}
-footer a{text-underline-offset:2px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#102b3e;color:#fff;border-radius:10px;padding:10px 17px;font-size:13px;z-index:50;display:none;box-shadow:0 8px 24px #0003;min-width:max-content;max-width:92vw}
-@media(max-width:540px){.hero-title{font-size:29px}.entry{padding:13px 14px}.filter-row .lab{font-size:12px}.chip{font-size:13px;padding:4px 10px}.eyebrow{font-size:12px}.chapter-heading{font-size:18px}.filters{padding:10px 0}.owner{font-size:13px}}
-@media(print){.filters,.theme-toggle,.deep,.toast,.more-items,.owner{display:none!important}.entry{break-inside:avoid}body{background:white;color:black}header{background:white;color:black}}
-.filter-note{font-size:12px;color:var(--sub);margin:7px 0 2px 4px}.chip[hidden]{display:none!important}.province-row .chip{white-space:nowrap}</style>
+<meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12283b">
+<meta name="description" content="电力设备招投标情报平台：2025—2026中国国家电网、南方电网、国家能源集团、华能、华电、电建等电力设备采购项目、供应商与中标公开资料。支持省份筛选、公告合并、CSV 导出与收藏。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="电力小张 · 电力设备情报站">
+<meta property="og:description" content="看采购、查中标、搜供应商。2025—2026历史档案，逐条标明数据来源与状态。">
+<title>电力设备情报站｜电力小张</title>
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<header>
-<button class="theme-toggle" id="theme" aria-label="切换深浅主题">深/浅</button>
-<div class="wrap">
-<div class="eyebrow">电力小张 · 公开市场资料库</div>
-<h1 class="hero-title">电力设备情报库</h1>
-<p class="slogan">不只看<b><strong>谁在采购</strong></b>，更要看清<b><strong>谁拿订单</strong></b>。</p>
-<div class="hero-meta"><span id="total">正在载入资料…</span> · 国网/南网/发电集团采购 · 2025—2026 年 · 更新至 2026-10-23 · <a href="https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/tree/main/electric-intel" target="_blank" rel="noopener">GitHub 数据仓库 ↗</a></div>
-<div class="owner">关注作者：微信号 <b id="wechat">ydncg2024</b><button type="button" id="copywechat">复制</button></div>
-</div>
+<header class="top">
+ <nav class="nav shell" aria-label="顶部导航">
+  <a href="./" class="brand"><span class="brandmark" aria-hidden="true">⚡</span> 电力小张 <span style="font-weight:400;color:#92abb7">/ 电力情报</span></a>
+  <div class="nav-right">
+   <button id="theme" type="button" class="nav-action" aria-label="切换深色或浅色">◐ 深/浅</button>
+   <a href="#guide" class="nav-action">使用说明</a>
+  </div>
+ </nav>
+ <div class="intro shell">
+  <div class="kicker">POWER MARKET INTELLIGENCE · CHINA</div>
+  <h1>每一条采购情报，<br>都有迹可循。</h1>
+  <p>国家电网、南方电网、发电集团与新能源设备采购资料<br><strong>查公告、追供应商、按省份筛选。</strong> 从信息堆里找到真正值得看的线索。</p>
+  <div class="hero-actions">
+   <a href="#workspace" class="primary">开始检索情报 ↓</a>
+   <button id="copy-wechat" type="button" class="minor">微信 <span id="wx-code">ydncg2024</span> · 复制</button>
+  </div>
+  <div class="hero-meta">历史档案截至 <time id="meta-date">2026-10-23</time> · 只提供公开资料索引 · <a href="https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/tree/main/overseas/electric-intel" target="_blank" rel="noopener noreferrer">开源页面与数据 ↗</a></div>
+ </div>
 </header>
-<div class="filters" id="filters">
-<div class="wrap">
-<input type="search" id="query" class="search" placeholder="搜关键词：变压器、开关柜、广东、奥克斯、中标……" aria-label="搜索所有档案">
-<div class="filter-row" id="year-row"><span class="lab">公告年份</span></div>
-<div class="filter-row" id="owner-row"><span class="lab">采购单位</span></div>
-<div class="filter-row province-row" id="province-row"><span class="lab">省份地区</span></div>
-<button type="button" id="provinces-toggle" class="fmore" aria-expanded="false">展开全部省份 ↓</button>
-<p class="filter-note">只将明确归属某省的项目算进该省；全国与跨省框架单独归档。广州、深圳等城市自动归入对应省份。</p>
-<div class="filter-row" id="cat-row"><span class="lab">设备专题</span></div>
-<div class="filter-row extra" id="status-row"><span class="lab">公告状态</span></div>
-<div class="filter-row extra" id="type-row"><span class="lab">记录类型</span></div>
-
-<button type="button" class="fmore" id="showfilters">更多筛选</button>
+<div class="shell summary-bar" aria-label="数据概况">
+ <section class="kpi"><strong id="kpi-records">—</strong><span>结构化情报记录</span></section>
+ <section class="kpi"><strong id="kpi-sources">—</strong><span>不同来源网址</span></section>
+ <section class="kpi"><strong id="kpi-organizations">—</strong><span>采购主体类别</span></section>
+ <section class="kpi"><strong id="kpi-provinces">—</strong><span>有资料的省级地区</span></section>
 </div>
+<div class="shell workspace" id="workspace">
+ <section class="toolbar" aria-label="搜索与快捷地区">
+  <div class="search-main">
+   <div class="search-wrap">
+    <span class="search-icon" aria-hidden="true">⌕</span>
+    <input id="search" type="search" class="search" placeholder="搜索：变压器、陕西、国网、宁波奥克斯、10kV、中标…" autocomplete="off" aria-label="搜索所有采购情报">
+   </div>
+   <button type="button" id="reset-main" class="clear">清空</button>
+  </div>
+  <div class="quick-provinces" id="province-tabs" aria-label="热门省份快捷筛选"></div>
+ </section>
+ <div class="panes">
+  <button class="mobile-open" id="filters-mobile" aria-controls="filter-panel" aria-expanded="false" type="button">高级筛选与排序 ↓</button>
+  <aside id="filter-panel" class="filters" aria-label="多条件筛选">
+   <h2 class="side-title">筛选条件 <button type="button" class="side-reset" id="reset-side">全部重置</button></h2>
+   <div class="filter-block"><label for="filter-year">公告年份</label><select id="filter-year"></select></div>
+   <div class="filter-block"><label for="filter-owner">采购单位 / 机构</label><select id="filter-owner"></select></div>
+   <div class="filter-block"><label for="filter-province">省份及地区（31省级行政区）</label><select id="filter-province"></select></div>
+   <div class="filter-block"><label for="filter-cat">设备专业方向</label><select id="filter-cat"></select></div>
+   <div class="filter-block"><label for="filter-status">公告状态</label><select id="filter-status"></select></div>
+   <div class="filter-block"><label for="filter-type">资料类型</label><select id="filter-type"></select></div>
+   <div class="filter-block"><label for="filter-sourceType">来源类别</label><select id="filter-sourceType"></select></div>
+   <div class="filter-block"><label for="filter-start">发布日期从</label><input id="filter-start" type="date" class="search" style="height:42px;padding:0 11px"></div>
+   <div class="filter-block"><label for="filter-end">发布日期至</label><input id="filter-end" type="date" class="search" style="height:42px;padding:0 11px"></div>
+   <div class="filter-block"><label for="filter-sort">排序方式</label><select id="filter-sort">
+    <option value="new">最新公告优先</option>
+    <option value="old">最早公告优先</option>
+    <option value="title">标题拼音排序</option>
+   </select></div>
+   <p class="filter-note">省份只统计明确属于当地的记录。跨省框架招标归“跨省”，全国统计归“全国”。筛选数量不是市场真实订单数量。</p>
+   <div class="sidebar-foot"><b>证据口径</b><p>官方来源、企业披露转载和第三方汇总分开标注。历史中标不代表合同已履行，候选报价不等于最终中标。</p><a href="#guide">了解数据局限与使用方式 →</a></div>
+  </aside>
+  <main class="main-panel">
+   <div class="result-head">
+    <div><h2 id="result-title">电力设备情报</h2><p id="result-desc">正在加载数据…</p></div>
+    <div class="save-actions">
+     <button id="share-site" type="button" class="small-btn" title="复制当前筛选网址">分享</button>
+     <button id="export-btn" type="button" class="small-btn" title="将当前筛选结果导出为 CSV 文件">↓ CSV 导出</button>
+    </div>
+   </div>
+   <div class="segment" role="group" aria-label="选择浏览方式">
+    <button type="button" id="mode-items" aria-pressed="true">全部记录</button>
+    <button type="button" id="mode-sources" aria-pressed="false">按来源合并</button>
+    <button type="button" id="mode-insights" aria-pressed="false">统计观察</button>
+    <button type="button" id="mode-saved" aria-pressed="false">☆ 我的收藏</button>
+   </div>
+   <div class="utility">
+    <div class="util-left">
+     <button type="button" id="current-only" class="pill" aria-pressed="false">☆ 仅看已收藏</button>
+     <span class="pill">2025—2026 历史库</span>
+    </div>
+    <div class="util-right"><span class="pill">公开信息 · 非实时</span></div>
+   </div>
+   <div id="results" aria-live="polite" aria-label="检索结果"><div class="empty">正在加载历史公开情报…</div></div>
+   <button type="button" id="more" class="more-button" hidden>加载更多记录</button>
+   <div class="disclaimer" id="guide">
+    <strong>这不是招标交易平台，也不是自动实时订阅。</strong> 当前为人工整理的2025—2026年历史样本库；同一原文可能拆分成数条标包或设备索引，因此“记录数”与“不同来源数”同时展示。第三方链接、企业披露转载尚不能全部视作独立核验；参与采购必须回到采购方官方公告核对截止日期、资格、金额及补充公告。<br>
+    <strong>使用技巧：</strong> 先选采购方或省份，再搜设备关键词；“按来源合并”可减少重复；“收藏”仅保存在当前浏览器；“CSV 导出”可保存当前筛选表。
+   </div>
+  </main>
+ </div>
+ <footer class="footer">
+  <div><strong style="color:var(--ink)">电力小张 · 电力设备情报站</strong> · 微信 ydncg2024</div>
+  <div id="data-footnote">历史资料索引 · 等待加载</div>
+  <div>非国家电网、南方电网、国能或其他采购主体的官方网站。来源权利归原发布者所有，具体以原公告为准。 <a href="#workspace">返回顶部 ↑</a></div>
+ </footer>
 </div>
-<main class="wrap">
-<div class="countbar"><span id="result-count">载入中…</span><button id="reset" type="button">清空筛选</button></div>
-<div id="results" aria-live="polite"><div class="noresults">正在加载电力设备历史档案……</div></div>
-<footer>
-<p><b>关于数据：</b>本站是逐步扩充的公开采购资料索引，并非全国所有采购项目的完整清单。省份仅统计明确归属当地的记录，全国和跨省框架不会重复算到各省。品类索引与厂商标包来自较大的框架采购公告，同一公告拆分的多条索引不是多个独立采购项目。数据统计截至 2026 年 10 月 23 日，具体招标状态应在原平台再次确认。</p>
-<p>证据 A 主要指官方公开信息；证据 B 包括行业转载、二次汇总或部分企业披露页，不代表招标项目仍开放、金额已实际执行或每个链接都处于可访问状态。候选人报价不等于正式中标金额，框架中标比例不等于市场份额。</p>
-<p>本站与国家电网、南方电网及其他采购主体均无隶属关系。本库以信息学习、市场研究为用途；招标投标以官方平台和完整招标文件为准。</p>
-<p>作者：电力小张 · 微信 <b id="wechatfooter">ydncg2024</b> · <a href="#top" id="backtop">返回顶部 ↑</a></p>
-</footer>
-</main>
 <div id="toast" class="toast" role="status"></div>
 <script src="./data.js"></script>
 <script src="./expansion.js"></script>
 <script src="./province-data.js"></script>
-<script>
-(function(){
-'use strict';
-var rows=[].concat(Array.isArray(window.POWER_ARCHIVE)?window.POWER_ARCHIVE:[],Array.isArray(window.POWER_EXPANSION)?window.POWER_EXPANSION:[],Array.isArray(window.POWER_PROVINCE_RECORDS)?window.POWER_PROVINCE_RECORDS:[]);
-var provincesMain=['北京','天津','河北','山西','内蒙古','辽宁','吉林','黑龙江','上海','江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南','广东','广西','海南','重庆','四川','贵州','云南','西藏','陕西','甘肃','青海','宁夏','新疆'];
-var hot=['陕西','广东','江苏','山东','浙江','河南','河北','四川'];
-var provinces=hot.concat(provincesMain.filter(function(p){return hot.indexOf(p)<0}),['跨省','全国','海外']);
-var cities={深圳:'广东',广州:'广东',东莞:'广东',佛山:'广东',珠海:'广东',中山:'广东',西安:'陕西',咸阳:'陕西',渭南:'陕西',榆林:'陕西',宝鸡:'陕西',南京:'江苏',苏州:'江苏',无锡:'江苏',杭州:'浙江',宁波:'浙江',济南:'山东',青岛:'山东',郑州:'河南',成都:'四川',武汉:'湖北',长沙:'湖南',福州:'福建',厦门:'福建',合肥:'安徽',南昌:'江西',贵阳:'贵州',昆明:'云南',南宁:'广西',海口:'海南',拉萨:'西藏',西宁:'青海',银川:'宁夏',乌鲁木齐:'新疆',兰州:'甘肃',沈阳:'辽宁',大连:'辽宁',长春:'吉林',哈尔滨:'黑龙江',太原:'山西',石家庄:'河北'};
-function pickProvince(x){
- var r=String(x.province||x.region||'');
- if(provincesMain.indexOf(r)>=0)return r;
- if(cities[r])return cities[r];
- if(r.indexOf('全国')>=0)return '全国';
- if(/南方五省|跨省|多省/.test(r))return '跨省';
- if(/海外|柬埔寨|圭亚那/.test(r))return '海外';
- for(var i=0;i<provincesMain.length;i++)if(r.indexOf(provincesMain[i])>=0)return provincesMain[i];
- for(var c in cities)if(r.indexOf(c)>=0)return cities[c];
- return '跨省';
-}
-rows.forEach(function(x){if(!x.owner)x.owner=x.type==='统计发布'||x.cat==='电力数据'?'国家能源局':'南方电网';x.province=pickProvince(x)});
-rows.sort(function(a,b){return b.date.localeCompare(a.date)});
-var provinceExpanded=false;
-var meta=window.POWER_META||{};
-var chosen={year:'',cat:'',status:'',type:'',owner:'',province:''};
-var expanded=false,opened={};
-var toast=document.getElementById('toast');
-var yearGroup=['2026','2025'],cats=['配网设备','主网设备','线缆材料','厂商格局','监测仪表','电力数据','储能新能源','UPS及备用电源','行业分析'];
-var stat=['招标中','采购进行中','历史招标','正式中标','中标候选','中标及预中标','披露中标结果','采购结果','官方数据','行业分析'];
-var types=['公告','中标标包','省级标包','品类索引','统计发布','行业分析'];
-var owners=['国家电网','南方电网','国家能源集团','华能集团','大唐集团','华电集团','国家电投','中国电建','中广核','华润集团','国家能源局'];
-var byId=function(id){return document.getElementById(id)};
-function h(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function notify(msg){toast.textContent=msg;toast.style.display='block';clearTimeout(notify.t);notify.t=setTimeout(function(){toast.style.display='none'},2500)}
-function copy(s){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(function(){notify('已复制')}).catch(function(){prompt('请长按复制',s)})}else{prompt('请长按复制',s)}}
-function rowButtons(id,key,vals){var el=byId(id);el.querySelectorAll('button').forEach(function(x){x.remove()});[['','全部']].concat(vals.map(function(v){return [v,v]})).forEach(function(p){var b=document.createElement('button');b.type='button';b.className='chip';b.textContent=p[1];b.setAttribute('aria-pressed',String(chosen[key]===p[0]));b.addEventListener('click',function(){chosen[key]=p[0];render();syncChips();window.scrollTo({top:0,behavior:'auto'})});el.appendChild(b)})}
-function syncChips(){
-rowButtons('year-row','year',yearGroup);
-rowButtons('owner-row','owner',owners);
-rowButtons('province-row','province',provinces);
-byId('province-row').querySelectorAll('.chip').forEach(function(b,i){
-var p=i===0?'':provinces[i-1];var hide=!provinceExpanded&&i>hot.length&&p!==chosen.province;
-b.hidden=hide;
-if(i>0){var n=rows.filter(function(x){return x.province===p}).length;b.textContent=p+' ('+n+')'}
-});
-byId('provinces-toggle').textContent=provinceExpanded?'收起省份 ↑':'展开全部31省份及其他地区 ↓';
-byId('provinces-toggle').setAttribute('aria-expanded',String(provinceExpanded));
-rowButtons('cat-row','cat',cats);
-rowButtons('status-row','status',stat);
-rowButtons('type-row','type',types);
-
-}
-function matches(x){
-if(chosen.year && String(x.year)!==chosen.year)return false;
-if(chosen.cat && x.cat!==chosen.cat)return false;
-if(chosen.status && x.status!==chosen.status)return false;
-if(chosen.type && x.type!==chosen.type)return false;
-if(chosen.owner && x.owner!==chosen.owner)return false;
-if(chosen.province && x.province!==chosen.province)return false;
-var q=byId('query').value.trim().toLowerCase();
-if(q){var words=q.split(/\s+/).filter(Boolean),txt=[x.title,x.summary,x.analysis,x.source,x.owner,x.cat,x.region,x.province,x.status,x.type,x.date,String(x.projectYear)].join(' ').toLowerCase();if(!words.every(function(word){return txt.indexOf(word)!==-1}))return false}
-return true;
-}
-var chapterDefs=[
-{title:'1. 各集团采购公告与中标结果',desc:'涵盖国家电网、南方电网、国家能源集团、华能、大唐、华电、国家电投、中广核、中国电建等。金额需区分采购估算额、中标候选报价与正式中标。',pred:function(x){return x.type==='公告'||x.type==='行业分析'}},
-{title:'2. 各省份招投标与厂商标包',desc:'这部分明确归属于某省的设备标包，可能是中标、预中标或候选人公示，并非都已签署合同。',pred:function(x){return x.type==='省级标包'}},
-{title:'3. 供应商与中标标包',desc:'直接拆解南方电网框架中标结果。这里记录的是“某个标包的中标比例”，不是全国市场份额，也不是实际回款金额。',pred:function(x){return x.type==='中标标包'}},
-{title:'4. 配网设备采购索引',desc:'变压器、箱变、开关柜、柱上开关等品类。多个条目可能对应同一批框架招标，目的是让设备名称可以独立被搜索。',pred:function(x){return x.type==='品类索引'&&x.cat==='配网设备'}},
-{title:'5. 主网一次设备采购索引',desc:'GIS、HGIS、110—500kV变压器、互感器、电抗器、保护监测装置等物资，按批次与公告日期归档。',pred:function(x){return x.type==='品类索引'&&x.cat==='主网设备'}},
-{title:'6. 电线电缆与配网材料索引',desc:'电力电缆、架空线、混凝土杆、角钢塔等材料采购清单；品类拆分仅供检索，不代表新的独立项目。',pred:function(x){return x.type==='品类索引'&&x.cat==='线缆材料'}},
-{title:'7. 国家能源局 · 官方统计',desc:'以政府公布的数据为准。装机、电网投资、社会用电量等用于判断趋势，不能直接推导厂家订单。',pred:function(x){return x.type==='统计发布'}}
-];
-function card(x,i){
-var label=x.type==='品类索引'?'历史品类':x.type==='中标标包'?'框架中标':x.status;
-var cls=x.status==='正式中标'||x.status==='招标中'||x.status==='采购进行中'?'authority':x.status==='中标候选'||x.status==='中标及预中标'?'candidate':'';
-var url=x.url&&/^https:\/\//.test(x.url)?x.url:'#';
-var o='<article class="entry" id="'+h(x.id)+'"><h3><span class="n">'+(i+1)+'.</span>'+h(x.title)+'</h3>';
-o+='<div class="bags"><span class="tag '+cls+'">'+h(label)+'</span><span class="tag">证据 '+h(x.level||'A')+'</span><span class="tag">'+h(x.date)+'</span><span class="tag">'+h(x.province)+'</span><span class="tag">'+h(x.owner)+'</span><span class="tag">'+h(x.cat)+'</span></div>';
-o+='<div class="explain">'+h(x.summary)+'</div>';
-o+='<div class="visit"><b>核对原文</b><a class="go" target="_blank" rel="noopener noreferrer" href="'+h(url)+'">'+h(x.source||'官方平台')+' ↗</a></div>';
-o+='<details><summary>看项目说明、风险提示和完整来源</summary><div class="item-field"><b>公告日</b>'+h(x.date)+'　　<b>项目年</b>'+h(x.projectYear)+'</div>';
-o+='<div class="item-field"><b>类型</b>'+h(x.type)+' · '+h(x.status)+'　　<b>地区</b>'+h(x.region)+'　　<b>采购主体</b>'+h(x.owner)+'</div>';
-o+='<div class="item-field"><b>专业点评</b>'+h(x.analysis)+'</div>';
-o+='<div class="item-field"><b>数据口径</b>'+ (x.type==='中标标包'?'从同一份中标公告抽取标包信息。':'品类索引'===x.type?'从同一份招标公告按设备品类拆分，非独立招标。':x.type==='统计发布'?'以公布统计口径为准。':'按公开公告整理；以原文更新为准。')+'</div>';
-o+='<div class="item-field"><b>来源链接</b><a href="'+h(url)+'" target="_blank" rel="noopener noreferrer">'+h(url)+'</a></div>';
-o+='<div class="deep"><button type="button" class="copy-link" data-id="'+h(x.id)+'">复制这一条的链接</button><button type="button" class="copy-text" data-id="'+h(x.id)+'">复制摘要</button></div></details></article>';
-return o
-}
-function render(){
-if(!rows.length){byId('results').innerHTML='<div class="noresults">资料暂时未成功加载。请刷新页面再试。</div>';byId('result-count').textContent='载入失败';return}
-var selected=rows.filter(matches),html='',serial=0;
-chapterDefs.forEach(function(ch,index){var items=selected.filter(ch.pred);if(!items.length)return;
-var lim=opened[index]?items.length:Math.min(10,items.length);
-html+='<section><h2 class="chapter-heading">'+ch.title+' <span style="font-size:13px;color:var(--sub);font-weight:400">('+items.length+')</span></h2><p class="chapter-desc">'+ch.desc+'</p>';
-for(var j=0;j<lim;j++)html+=card(items[j],++serial-1);
-if(items.length>lim)html+='<button class="more-items" type="button" data-section="'+index+'">继续查看本章其余 '+(items.length-lim)+' 条 ↓</button>';
-else if(opened[index]&&items.length>10)html+='<button class="more-items" type="button" data-collapse="'+index+'">收起本章 ↑</button>';
-html+='</section>'});
-if(!html)html='<div class="noresults">没有找到匹配记录。换一个关键词，或者点击「清空筛选」。</div>';
-byId('results').innerHTML=html;
-byId('result-count').textContent='找到 '+selected.length+' / '+rows.length+' 条 · '+(chosen.province||'全部地区')+(chosen.owner?' · '+chosen.owner:'')+' · 含公告拆分的标包和物资索引';
-byId('results').querySelectorAll('[data-section]').forEach(function(b){b.onclick=function(){opened[b.dataset.section]=true;render()}});
-byId('results').querySelectorAll('[data-collapse]').forEach(function(b){b.onclick=function(){delete opened[b.dataset.collapse];render()}});
-byId('results').querySelectorAll('.copy-link').forEach(function(b){b.onclick=function(){copy(location.origin+location.pathname+'#'+b.dataset.id)}});
-byId('results').querySelectorAll('.copy-text').forEach(function(b){b.onclick=function(){var x=rows.find(function(z){return z.id===b.dataset.id});if(x)copy(x.title+'\n'+x.summary+'\n来源：'+x.url)}});
-}
-byId('total').textContent=rows.length+' 条结构化记录 · 含集团公告、省级标包、设备索引';
-byId('wechat').textContent=meta.wechat||'ydncg2024';byId('wechatfooter').textContent=meta.wechat||'ydncg2024';
-byId('copywechat').onclick=function(){copy(meta.wechat||'ydncg2024')};
-byId('query').addEventListener('input',render);
-byId('reset').onclick=function(){chosen={year:'',cat:'',status:'',type:'',owner:'',province:''};byId('query').value='';opened={};syncChips();render()};
-byId('provinces-toggle').onclick=function(){provinceExpanded=!provinceExpanded;syncChips()};
-byId('showfilters').onclick=function(){expanded=!expanded;byId('filters').classList.toggle('expanded',expanded);this.textContent=expanded?'收起筛选':'更多筛选'};
-function themeSet(t){if(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('power-theme',t)}catch(e){}}}
-try{themeSet(localStorage.getItem('power-theme')||'')}catch(e){}
-byId('theme').onclick=function(){var isDark=getComputedStyle(document.body).backgroundColor==='rgb(15, 27, 35)';themeSet(isDark?'light':'dark')};
-syncChips();render();
-if(location.hash&&/^#[ENP]\d{3}$/.test(location.hash)){var found=rows.find(function(x){return '#'+x.id===location.hash});if(found){chosen.type=found.type;syncChips();opened={0:true,1:true,2:true,3:true,4:true,5:true,6:true};render();setTimeout(function(){var e=byId(found.id);if(e){e.scrollIntoView();e.querySelector('details').open=true}},250)}}
-})();
-</script>
+<script src="./app.js"></script>
 </body>
 </html>
