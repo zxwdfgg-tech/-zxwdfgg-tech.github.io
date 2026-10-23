@@ -1,0 +1,66 @@
+name: Build Electric Intel Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "android-app/**"
+      - ".github/workflows/build-electric-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout site and Android project
+        uses: actions/checkout@v4
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Bundle site and offline archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android-app/app/src/main/assets/site
+          for f in index.html style.css app.js data.js expansion.js province-data.js; do
+            cp "overseas/electric-intel/$f" "android-app/app/src/main/assets/site/$f"
+            test -s "android-app/app/src/main/assets/site/$f"
+          done
+          grep -q "ydncg2024" android-app/app/src/main/assets/site/index.html
+      - name: Assemble installable APK
+        run: gradle -p android-app :app:assembleDebug --no-daemon --stacktrace
+      - name: Stage APK
+        run: |
+          mkdir -p dist
+          cp android-app/app/build/outputs/apk/debug/app-debug.apk dist/Electric-Intel-v0.1.0.apk
+          test -s dist/Electric-Intel-v0.1.0.apk
+      - name: Keep build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Electric-Intel-Android-APK
+          path: dist/Electric-Intel-v0.1.0.apk
+          retention-days: 30
+      - name: Publish public download to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="electric-intel-v0.1.0"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "dist/Electric-Intel-v0.1.0.apk" --clobber
+          else
+            gh release create "$tag" "dist/Electric-Intel-v0.1.0.apk" \
+              --title "电力设备情报库 Android v0.1.0" \
+              --notes "安卓7.0以上；内置2025—2026电力设备公开情报，可离线浏览，支持在线版切换。试用版调试签名，后续正式升级应使用稳定签名证书。"
+          fi
