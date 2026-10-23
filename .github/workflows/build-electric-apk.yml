@@ -6,7 +6,12 @@ on:
     paths:
       - "android-app/**"
       - ".github/workflows/build-electric-apk.yml"
+      - "overseas/electric-intel/**"
   workflow_dispatch:
+
+concurrency:
+  group: electric-intel-android
+  cancel-in-progress: true
 
 permissions:
   contents: write
