@@ -71,7 +71,7 @@ footer a{text-underline-offset:2px}
 <div class="eyebrow">电力小张 · 公开市场资料库</div>
 <h1 class="hero-title">电力设备情报库</h1>
 <p class="slogan">不只看<b><strong>谁在采购</strong></b>，更要看清<b><strong>谁拿订单</strong></b>。</p>
-<div class="hero-meta"><span id="total">正在载入资料…</span> · 官方公告与行业数据 · 2025—2026 年 · 更新至 2026-10-23 · <a href="https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/tree/main/electric-intel" target="_blank" rel="noopener">GitHub 数据仓库 ↗</a></div>
+<div class="hero-meta"><span id="total">正在载入资料…</span> · 国网/南网/发电集团采购 · 2025—2026 年 · 更新至 2026-10-23 · <a href="https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/tree/main/electric-intel" target="_blank" rel="noopener">GitHub 数据仓库 ↗</a></div>
 <div class="owner">关注作者：微信号 <b id="wechat">ydncg2024</b><button type="button" id="copywechat">复制</button></div>
 </div>
 </header>
@@ -94,9 +94,9 @@ footer a{text-underline-offset:2px}
 <div class="countbar"><span id="result-count">载入中…</span><button id="reset" type="button">清空筛选</button></div>
 <div id="results" aria-live="polite"><div class="noresults">正在加载电力设备历史档案……</div></div>
 <footer>
-<p><b>关于数据：</b>本站是电力行业公开资料索引。品类索引与厂商标包来自较大的框架采购公告，同一公告拆分的多条索引不是多个独立采购项目。数据统计截至 2026 年 10 月 23 日，具体招标状态应在原平台再次确认。</p>
-<p>证据 A 仅指记录提供国家能源局、南方电网等官方出处，不代表招标项目仍开放、金额已实际执行或每个链接都处于可访问状态。候选人报价不等于正式中标金额，框架中标比例不等于市场份额。</p>
-<p>非南方电网、国家能源局或任何招标主体的官方网站。本库以信息学习、市场研究为用途；招标投标以官方平台和完整招标文件为准。</p>
+<p><b>关于数据：</b>本站是逐步扩充的公开采购资料索引，并非全国所有采购项目的完整清单。省份仅统计明确归属当地的记录，全国和跨省框架不会重复算到各省。品类索引与厂商标包来自较大的框架采购公告，同一公告拆分的多条索引不是多个独立采购项目。数据统计截至 2026 年 10 月 23 日，具体招标状态应在原平台再次确认。</p>
+<p>证据 A 主要指官方公开信息；证据 B 包括行业转载、二次汇总或部分企业披露页，不代表招标项目仍开放、金额已实际执行或每个链接都处于可访问状态。候选人报价不等于正式中标金额，框架中标比例不等于市场份额。</p>
+<p>本站与国家电网、南方电网及其他采购主体均无隶属关系。本库以信息学习、市场研究为用途；招标投标以官方平台和完整招标文件为准。</p>
 <p>作者：电力小张 · 微信 <b id="wechatfooter">ydncg2024</b> · <a href="#top" id="backtop">返回顶部 ↑</a></p>
 </footer>
 </main>
@@ -167,23 +167,24 @@ if(q){var words=q.split(/\s+/).filter(Boolean),txt=[x.title,x.summary,x.analysis
 return true;
 }
 var chapterDefs=[
-{title:'1. 采购公告、中标结果与市场消息',desc:'独立公告与采购信息。把正式中标、中标候选、历史采购明确分开，避免把正在公示的报价当作成交额。',pred:function(x){return x.type==='公告'}},
-{title:'2. 供应商与中标标包',desc:'直接拆解南方电网框架中标结果。这里记录的是“某个标包的中标比例”，不是全国市场份额，也不是实际回款金额。',pred:function(x){return x.type==='中标标包'}},
-{title:'3. 配网设备采购索引',desc:'变压器、箱变、开关柜、柱上开关等品类。多个条目可能对应同一批框架招标，目的是让设备名称可以独立被搜索。',pred:function(x){return x.type==='品类索引'&&x.cat==='配网设备'}},
-{title:'4. 主网一次设备采购索引',desc:'GIS、HGIS、110—500kV变压器、互感器、电抗器、保护监测装置等物资，按批次与公告日期归档。',pred:function(x){return x.type==='品类索引'&&x.cat==='主网设备'}},
-{title:'5. 电线电缆与配网材料索引',desc:'电力电缆、架空线、混凝土杆、角钢塔等材料采购清单；品类拆分仅供检索，不代表新的独立项目。',pred:function(x){return x.type==='品类索引'&&x.cat==='线缆材料'}},
-{title:'6. 国家能源局 · 官方统计',desc:'以政府公布的数据为准。装机、电网投资、社会用电量等用于判断趋势，不能直接推导厂家订单。',pred:function(x){return x.type==='统计发布'}}
+{title:'1. 各集团采购公告与中标结果',desc:'涵盖国家电网、南方电网、国家能源集团、华能、大唐、华电、国家电投、中广核、中国电建等。金额需区分采购估算额、中标候选报价与正式中标。',pred:function(x){return x.type==='公告'||x.type==='行业分析'}},
+{title:'2. 各省份招投标与厂商标包',desc:'这部分明确归属于某省的设备标包，可能是中标、预中标或候选人公示，并非都已签署合同。',pred:function(x){return x.type==='省级标包'}},
+{title:'3. 供应商与中标标包',desc:'直接拆解南方电网框架中标结果。这里记录的是“某个标包的中标比例”，不是全国市场份额，也不是实际回款金额。',pred:function(x){return x.type==='中标标包'}},
+{title:'4. 配网设备采购索引',desc:'变压器、箱变、开关柜、柱上开关等品类。多个条目可能对应同一批框架招标，目的是让设备名称可以独立被搜索。',pred:function(x){return x.type==='品类索引'&&x.cat==='配网设备'}},
+{title:'5. 主网一次设备采购索引',desc:'GIS、HGIS、110—500kV变压器、互感器、电抗器、保护监测装置等物资，按批次与公告日期归档。',pred:function(x){return x.type==='品类索引'&&x.cat==='主网设备'}},
+{title:'6. 电线电缆与配网材料索引',desc:'电力电缆、架空线、混凝土杆、角钢塔等材料采购清单；品类拆分仅供检索，不代表新的独立项目。',pred:function(x){return x.type==='品类索引'&&x.cat==='线缆材料'}},
+{title:'7. 国家能源局 · 官方统计',desc:'以政府公布的数据为准。装机、电网投资、社会用电量等用于判断趋势，不能直接推导厂家订单。',pred:function(x){return x.type==='统计发布'}}
 ];
 function card(x,i){
 var label=x.type==='品类索引'?'历史品类':x.type==='中标标包'?'框架中标':x.status;
-var cls=x.status==='正式中标'||x.status==='招标中'?'authority':x.status==='中标候选'?'candidate':'';
+var cls=x.status==='正式中标'||x.status==='招标中'||x.status==='采购进行中'?'authority':x.status==='中标候选'||x.status==='中标及预中标'?'candidate':'';
 var url=x.url&&/^https:\/\//.test(x.url)?x.url:'#';
 var o='<article class="entry" id="'+h(x.id)+'"><h3><span class="n">'+(i+1)+'.</span>'+h(x.title)+'</h3>';
-o+='<div class="bags"><span class="tag '+cls+'">'+h(label)+'</span><span class="tag">证据 A</span><span class="tag">'+h(x.date)+'</span><span class="tag">'+h(x.region)+'</span><span class="tag">'+h(x.cat)+'</span></div>';
+o+='<div class="bags"><span class="tag '+cls+'">'+h(label)+'</span><span class="tag">证据 '+h(x.level||'A')+'</span><span class="tag">'+h(x.date)+'</span><span class="tag">'+h(x.province)+'</span><span class="tag">'+h(x.owner)+'</span><span class="tag">'+h(x.cat)+'</span></div>';
 o+='<div class="explain">'+h(x.summary)+'</div>';
 o+='<div class="visit"><b>核对原文</b><a class="go" target="_blank" rel="noopener noreferrer" href="'+h(url)+'">'+h(x.source||'官方平台')+' ↗</a></div>';
 o+='<details><summary>看项目说明、风险提示和完整来源</summary><div class="item-field"><b>公告日</b>'+h(x.date)+'　　<b>项目年</b>'+h(x.projectYear)+'</div>';
-o+='<div class="item-field"><b>类型</b>'+h(x.type)+' · '+h(x.status)+'　　<b>地区</b>'+h(x.region)+'</div>';
+o+='<div class="item-field"><b>类型</b>'+h(x.type)+' · '+h(x.status)+'　　<b>地区</b>'+h(x.region)+'　　<b>采购主体</b>'+h(x.owner)+'</div>';
 o+='<div class="item-field"><b>专业点评</b>'+h(x.analysis)+'</div>';
 o+='<div class="item-field"><b>数据口径</b>'+ (x.type==='中标标包'?'从同一份中标公告抽取标包信息。':'品类索引'===x.type?'从同一份招标公告按设备品类拆分，非独立招标。':x.type==='统计发布'?'以公布统计口径为准。':'按公开公告整理；以原文更新为准。')+'</div>';
 o+='<div class="item-field"><b>来源链接</b><a href="'+h(url)+'" target="_blank" rel="noopener noreferrer">'+h(url)+'</a></div>';
@@ -202,13 +203,13 @@ else if(opened[index]&&items.length>10)html+='<button class="more-items" type="b
 html+='</section>'});
 if(!html)html='<div class="noresults">没有找到匹配记录。换一个关键词，或者点击「清空筛选」。</div>';
 byId('results').innerHTML=html;
-byId('result-count').textContent='找到 '+selected.length+' / '+rows.length+' 条结构化记录 · 含品类索引与标包明细';
+byId('result-count').textContent='找到 '+selected.length+' / '+rows.length+' 条 · '+(chosen.province||'全部地区')+(chosen.owner?' · '+chosen.owner:'')+' · 含公告拆分的标包和物资索引';
 byId('results').querySelectorAll('[data-section]').forEach(function(b){b.onclick=function(){opened[b.dataset.section]=true;render()}});
 byId('results').querySelectorAll('[data-collapse]').forEach(function(b){b.onclick=function(){delete opened[b.dataset.collapse];render()}});
 byId('results').querySelectorAll('.copy-link').forEach(function(b){b.onclick=function(){copy(location.origin+location.pathname+'#'+b.dataset.id)}});
 byId('results').querySelectorAll('.copy-text').forEach(function(b){b.onclick=function(){var x=rows.find(function(z){return z.id===b.dataset.id});if(x)copy(x.title+'\n'+x.summary+'\n来源：'+x.url)}});
 }
-byId('total').textContent=rows.length+' 条结构化记录（包括独立公告、标包及品类索引）';
+byId('total').textContent=rows.length+' 条结构化记录 · 含集团公告、省级标包、设备索引';
 byId('wechat').textContent=meta.wechat||'ydncg2024';byId('wechatfooter').textContent=meta.wechat||'ydncg2024';
 byId('copywechat').onclick=function(){copy(meta.wechat||'ydncg2024')};
 byId('query').addEventListener('input',render);
