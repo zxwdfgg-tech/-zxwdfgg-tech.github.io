@@ -215,7 +215,11 @@ function exportCSV(){
  var heads=["编号","发布日期","项目年度","采购主体","省份","原地区","类别","状态","记录类型","项目标题","摘要","专业提示","原始来源类型","来源名称","来源链接"];
  var body=[heads.map(csvCell).join(",")];
  data.forEach(function(x){body.push([x.id,x.date,x.projectYear,x.owner,x.province,x.region,x.cat,x.status,x.type,x.title,x.summary,x.analysis,x.sourceType,x.source,x.url].map(csvCell).join(","))});
- var blob=new Blob(["\ufeff"+body.join("\r\n")],{type:"text/csv;charset=utf-8"});
+ var csv="\ufeff"+body.join("\r\n");
+ if(window.PowerAndroid&&typeof window.PowerAndroid.exportCsv==="function"){
+  try{window.PowerAndroid.exportCsv(csv,"电力设备情报_"+(state.province||"全国")+"_"+(meta.cutoff||"2026-10-23")+".csv");toast("请选择CSV文件的保存位置");return}catch(e){toast("系统保存未启用，尝试浏览器下载")}
+ }
+ var blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
  var url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="电力设备情报_"+(state.province||"全国")+"_"+(meta.cutoff||"2026-10-23")+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},800);toast("已生成 "+data.length+" 条筛选结果 CSV");
 }
 function setMode(m){state.mode=m;state.page=1;state.detail={};writeQuery();render()}
