@@ -2,107 +2,109 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#12283b">
-<meta name="description" content="电力设备招投标情报平台：2025—2026中国国家电网、南方电网、国家能源集团、华能、华电、电建等电力设备采购项目、供应商与中标公开资料。支持省份筛选、公告合并、CSV 导出与收藏。">
-<meta property="og:type" content="website">
-<meta property="og:title" content="电力小张 · 电力设备情报站">
-<meta property="og:description" content="看采购、查中标、搜供应商。2025—2026历史档案，逐条标明数据来源与状态。">
-<title>电力设备情报站｜电力小张</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c2946">
+<title>电力设备招投标情报库｜项目、中标单位与采购单位查询</title>
+<meta name="description" content="电力设备招投标情报库，按采购单位、中标单位、省份和设备类型检索2025—2026年历史公开公告，查看原始来源。">
+<meta property="og:title" content="电力设备招投标情报库">
+<meta property="og:description" content="查项目、找中标单位、找采购单位，按省份检索电力设备公开招投标信息。">
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<header class="top">
- <nav class="nav shell" aria-label="顶部导航">
-  <a href="./" class="brand"><span class="brandmark" aria-hidden="true">⚡</span> 电力小张 <span style="font-weight:400;color:#92abb7">/ 电力情报</span></a>
-  <div class="nav-right">
-   <button id="theme" type="button" class="nav-action" aria-label="切换深色或浅色">◐ 深/浅</button>
-   <a href="#guide" class="nav-action">使用说明</a>
+<header class="top" id="top">
+ <div class="shell">
+  <nav class="nav" aria-label="主导航">
+   <a class="brand" href="./"><span class="brandmark" aria-hidden="true">⚡</span><span>电力设备情报库</span></a>
+   <div class="nav-right">
+    <a class="nav-action" href="#guide">数据说明</a>
+    <button class="nav-action" id="theme" type="button" aria-label="切换浅色深色">◐</button>
+   </div>
+  </nav>
+  <div class="hero-compact">
+   <div class="hero-left">
+    <div class="kicker"><span class="pulse"></span> ELECTRIC POWER · PROCUREMENT INTELLIGENCE</div>
+    <h1>找项目 · 查中标 · 看采购单位</h1>
+    <p>全国电力设备招投标与企业中标信息，按省份、采购方和设备专业精准检索。</p>
+   </div>
+   <div class="update-status">
+    <span class="update-label">每日电力资讯</span>
+    <strong>关注最新招标与中标动态</strong>
+    <small>当前资料截至 <time id="meta-date">2026-10-23</time><br>自动每日更新功能建设中</small>
+   </div>
   </div>
- </nav>
- <div class="intro shell">
-  <div class="kicker">POWER MARKET INTELLIGENCE · CHINA</div>
-  <h1>每一条采购情报，<br>都有迹可循。</h1>
-  <p>国家电网、南方电网、发电集团与新能源设备采购资料<br><strong>查公告、追供应商、按省份筛选。</strong> 从信息堆里找到真正值得看的线索。</p>
-  <div class="hero-actions">
-   <a href="#workspace" class="primary">开始检索情报 ↓</a>
-   <button id="copy-wechat" type="button" class="minor">微信 <span id="wx-code">ydncg2024</span> · 复制</button>
-  </div>
-  <div class="hero-meta">历史档案截至 <time id="meta-date">2026-10-23</time> · 只提供公开资料索引 · <a href="https://github.com/zxwdfgg-tech/-zxwdfgg-tech.github.io/tree/main/overseas/electric-intel" target="_blank" rel="noopener noreferrer">开源页面与数据 ↗</a></div>
+  <section class="search-panel" id="workspace" aria-label="情报搜索">
+   <div class="search-tabs" id="search-tabs" aria-label="选择搜索类型">
+    <button type="button" class="active" data-search-mode="project" aria-pressed="true">找项目</button>
+    <button type="button" data-search-mode="buyer" aria-pressed="false">找采购单位</button>
+    <button type="button" data-search-mode="supplier" aria-pressed="false">找中标单位</button>
+    <button type="button" data-search-mode="notice" aria-pressed="false">查公告</button>
+   </div>
+   <div class="search-main">
+    <div class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span>
+     <input class="search" type="search" id="search" aria-label="搜索项目和企业" placeholder="搜索项目名称、设备、企业或关键词…" autocomplete="off">
+    </div>
+    <button class="search-submit" id="search-submit" type="button">搜索</button>
+    <button class="clear" id="reset-main" type="button">清空</button>
+   </div>
+   <div class="quick-provinces" id="province-tabs" aria-label="常用省份"></div>
+  </section>
  </div>
 </header>
-<div class="shell summary-bar" aria-label="数据概况">
- <section class="kpi"><strong id="kpi-records">—</strong><span>结构化情报记录</span></section>
- <section class="kpi"><strong id="kpi-sources">—</strong><span>不同来源网址</span></section>
- <section class="kpi"><strong id="kpi-organizations">—</strong><span>采购主体类别</span></section>
- <section class="kpi"><strong id="kpi-provinces">—</strong><span>有资料的省级地区</span></section>
-</div>
-<div class="shell workspace" id="workspace">
- <section class="toolbar" aria-label="搜索与快捷地区">
-  <div class="search-main">
-   <div class="search-wrap">
-    <span class="search-icon" aria-hidden="true">⌕</span>
-    <input id="search" type="search" class="search" placeholder="搜索：变压器、陕西、国网、宁波奥克斯、10kV、中标…" autocomplete="off" aria-label="搜索所有采购情报">
-   </div>
-   <button type="button" id="reset-main" class="clear">清空</button>
-  </div>
-  <div class="quick-provinces" id="province-tabs" aria-label="热门省份快捷筛选"></div>
+<div class="shell">
+ <section class="summary-bar" aria-label="资料概览">
+  <div class="kpi"><strong id="kpi-sources">—</strong><span>不同来源公告</span></div>
+  <div class="kpi"><strong id="kpi-records">—</strong><span>资料与标包索引</span></div>
+  <div class="kpi"><strong id="kpi-provinces">—</strong><span>已收录省级地区</span></div>
+  <div class="kpi"><strong id="kpi-organizations">—</strong><span>采购主体分类</span></div>
  </section>
- <div class="panes">
-  <button class="mobile-open" id="filters-mobile" aria-controls="filter-panel" aria-expanded="false" type="button">高级筛选与排序 ↓</button>
-  <aside id="filter-panel" class="filters" aria-label="多条件筛选">
-   <h2 class="side-title">筛选条件 <button type="button" class="side-reset" id="reset-side">全部重置</button></h2>
-   <div class="filter-block"><label for="filter-year">公告年份</label><select id="filter-year"></select></div>
-   <div class="filter-block"><label for="filter-owner">采购单位 / 机构</label><select id="filter-owner"></select></div>
-   <div class="filter-block"><label for="filter-province">省份及地区（31省级行政区）</label><select id="filter-province"></select></div>
-   <div class="filter-block"><label for="filter-cat">设备专业方向</label><select id="filter-cat"></select></div>
-   <div class="filter-block"><label for="filter-status">公告状态</label><select id="filter-status"></select></div>
-   <div class="filter-block"><label for="filter-type">资料类型</label><select id="filter-type"></select></div>
-   <div class="filter-block"><label for="filter-sourceType">来源类别</label><select id="filter-sourceType"></select></div>
-   <div class="filter-block"><label for="filter-start">发布日期从</label><input id="filter-start" type="date" class="search" style="height:42px;padding:0 11px"></div>
-   <div class="filter-block"><label for="filter-end">发布日期至</label><input id="filter-end" type="date" class="search" style="height:42px;padding:0 11px"></div>
-   <div class="filter-block"><label for="filter-sort">排序方式</label><select id="filter-sort">
-    <option value="new">最新公告优先</option>
-    <option value="old">最早公告优先</option>
-    <option value="title">标题拼音排序</option>
-   </select></div>
-   <p class="filter-note">省份只统计明确属于当地的记录。跨省框架招标归“跨省”，全国统计归“全国”。筛选数量不是市场真实订单数量。</p>
-   <div class="sidebar-foot"><b>证据口径</b><p>官方来源、企业披露转载和第三方汇总分开标注。历史中标不代表合同已履行，候选报价不等于最终中标。</p><a href="#guide">了解数据局限与使用方式 →</a></div>
-  </aside>
-  <main class="main-panel">
-   <div class="result-head">
-    <div><h2 id="result-title">电力设备情报</h2><p id="result-desc">正在加载数据…</p></div>
-    <div class="save-actions">
-     <button id="share-site" type="button" class="small-btn" title="复制当前筛选网址">分享</button>
-     <button id="export-btn" type="button" class="small-btn" title="将当前筛选结果导出为 CSV 文件">↓ CSV 导出</button>
+ <div class="workspace">
+  <div class="panes">
+   <button type="button" class="mobile-open" id="filters-mobile" aria-controls="filter-panel" aria-expanded="false">筛选条件 · 省份 / 单位 / 日期　⌄</button>
+   <aside id="filter-panel" class="filters" aria-label="筛选条件">
+    <h2 class="side-title">筛选条件 <button type="button" id="reset-side" class="side-reset">重置</button></h2>
+    <div class="filter-block"><label for="filter-year">公告年份</label><select id="filter-year"></select></div>
+    <div class="filter-block"><label for="filter-province">省份 / 地区</label><select id="filter-province"></select></div>
+    <div class="filter-block"><label for="filter-owner">采购单位（集团）</label><select id="filter-owner"></select></div>
+    <div class="filter-block"><label for="filter-cat">设备与专业</label><select id="filter-cat"></select></div>
+    <div class="filter-block"><label for="filter-status">公告类型 / 状态</label><select id="filter-status"></select></div>
+    <div class="filter-block"><label for="filter-type">记录类型</label><select id="filter-type"></select></div>
+    <div class="filter-block"><label for="filter-sourceType">来源类型</label><select id="filter-sourceType"></select></div>
+    <div class="filter-block"><label for="filter-start">发布日期从</label><input type="date" id="filter-start" class="search date-control"></div>
+    <div class="filter-block"><label for="filter-end">发布日期至</label><input type="date" id="filter-end" class="search date-control"></div>
+    <div class="filter-block"><label for="filter-sort">排序方式</label><select id="filter-sort">
+     <option value="new">日期从新到旧</option>
+     <option value="old">日期从旧到新</option>
+     <option value="title">标题排序</option>
+    </select></div>
+    <p class="filter-note">按实际项目所在地筛选；全国与跨省框架公告单独归档，不重复算进省份数量。</p>
+   </aside>
+   <main class="main-panel">
+    <div class="feed-header">
+     <div class="feed-heading"><span class="feed-accent">情报检索</span><h2 id="result-title">最新招投标信息</h2><p id="result-desc">正在载入资料…</p></div>
+     <div class="save-actions"><button type="button" class="small-btn" id="share-site">分享筛选</button><button type="button" class="small-btn export" id="export-btn">↓ 导出表格</button></div>
     </div>
-   </div>
-   <div class="segment" role="group" aria-label="选择浏览方式">
-    <button type="button" id="mode-items" aria-pressed="true">全部记录</button>
-    <button type="button" id="mode-sources" aria-pressed="false">按来源合并</button>
-    <button type="button" id="mode-insights" aria-pressed="false">统计观察</button>
-    <button type="button" id="mode-saved" aria-pressed="false">☆ 我的收藏</button>
-   </div>
-   <div class="utility">
-    <div class="util-left">
-     <button type="button" id="current-only" class="pill" aria-pressed="false">☆ 仅看已收藏</button>
-     <button type="button" id="source-pin" class="pill active" hidden>正在查看同源记录 · 清除 ×</button>
-     <span class="pill">2025—2026 历史库</span>
+    <div class="segment" role="group" aria-label="浏览模式">
+     <button type="button" id="mode-items" aria-pressed="true">情报列表</button>
+     <button type="button" id="mode-sources" aria-pressed="false">原文合并</button>
+     <button type="button" id="mode-insights" aria-pressed="false">数据统计</button>
+     <button type="button" id="mode-saved" aria-pressed="false">我的收藏</button>
     </div>
-    <div class="util-right"><span class="pill">公开信息 · 非实时</span></div>
-   </div>
-   <div id="results" aria-live="polite" aria-label="检索结果"><div class="empty">正在加载历史公开情报…</div></div>
-   <button type="button" id="more" class="more-button" hidden>加载更多记录</button>
-   <div class="disclaimer" id="guide">
-    <strong>这不是招标交易平台，也不是自动实时订阅。</strong> 当前为人工整理的2025—2026年历史样本库；同一原文可能拆分成数条标包或设备索引，因此“记录数”与“不同来源数”同时展示。第三方链接、企业披露转载尚不能全部视作独立核验；参与采购必须回到采购方官方公告核对截止日期、资格、金额及补充公告。<br>
-    <strong>使用技巧：</strong> 先选采购方或省份，再搜设备关键词；“按来源合并”可减少重复；“收藏”仅保存在当前浏览器；“CSV 导出”可保存当前筛选表。
-   </div>
-  </main>
+    <div class="utility">
+     <div class="util-left"><button type="button" id="current-only" class="pill" aria-pressed="false">☆ 仅看收藏</button><button type="button" id="source-pin" class="pill active" hidden>同源记录 · 清除 ×</button></div>
+     <div class="util-right"><span class="coverage-note">2025—2026 历史公开资料　·　非实时</span></div>
+    </div>
+    <div id="results" aria-label="搜索结果" aria-live="polite"><div class="empty">正在加载资料…</div></div>
+    <button type="button" id="more" class="more-button" hidden>查看更多结果</button>
+    <section class="disclaimer" id="guide">
+     <strong>资料说明</strong>：本平台按官方公告及公开披露整理2025—2026年的历史资料。一个公告可能被拆为多条标包、设备索引，记录数不等于独立项目数。<strong>“采购单位”与“中标单位”分开标注</strong>，未核实中标人或仅为候选人的不冒充正式中标；中标候选报价不等于成交合同额。
+     <p>当前最新资料日期为2026年10月23日。每日自动采集与推送尚未启用，不能将此网站视作实时招标监控。参与投标请打开采购方原始公告，核对截止日期、资格和变更。</p>
+    </section>
+   </main>
+  </div>
  </div>
- <footer class="footer">
-  <div><strong style="color:var(--ink)">电力小张 · 电力设备情报站</strong> · 微信 ydncg2024</div>
-  <div id="data-footnote">历史资料索引 · 等待加载</div>
-  <div>非国家电网、南方电网、国能或其他采购主体的官方网站。来源权利归原发布者所有，具体以原公告为准。 <a href="#workspace">返回顶部 ↑</a></div>
+ <footer class="footer"><strong>电力设备情报库</strong> · 公共采购资料检索
+  <div id="data-footnote">资料正在加载</div>
+  <div>独立整理的公开资料索引，不代表国家电网、南方电网及任何采购主体。数据及公告以原始发布方为准。 <a href="#top">返回顶部 ↑</a></div>
  </footer>
 </div>
 <div id="toast" class="toast" role="status"></div>
