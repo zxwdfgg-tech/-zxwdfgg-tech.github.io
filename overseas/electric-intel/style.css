@@ -120,3 +120,6 @@ h1{font-size:clamp(33px,4.3vw,52px);line-height:1.21;margin:11px 0 12px;letter-s
 @media(max-width:390px){.brand{font-size:13px}.nav-action{font-size:11px;padding:5px 8px}.kpi strong{font-size:23px}.save-actions .small-btn{font-size:11px}.result-head{flex-wrap:wrap}.meta-pills span{font-size:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 @media print{.top{background:white;color:black}.nav-right,.hero-actions,.toolbar,.filters,.mobile-open,.record-actions,.save-actions,.segment,.utility{display:none}.summary-bar{margin-top:0}.panes{display:block}.record{break-inside:avoid}}
+
+/* Explicitly respect HTML hidden state, including for buttons with display:block */
+[hidden],.more-button[hidden],.pill[hidden]{display:none!important}
