@@ -53,7 +53,7 @@ var catList=Array.from(new Set(rows.map(function(r){return r.cat}))).sort(functi
 var types=Array.from(new Set(rows.map(function(r){return r.type}))).sort(function(a,b){return a.localeCompare(b,"zh")});
 var statuses=Array.from(new Set(rows.map(function(r){return r.status}))).sort(function(a,b){return a.localeCompare(b,"zh")});
 var VALUES={owner:brands,province:HOT.concat(PROVINCES.filter(function(p){return HOT.indexOf(p)===-1}),["跨省","全国","海外"]),cat:catList,status:statuses,type:types,year:["2026","2025"],sourceType:["官方来源","企业披露转载","第三方来源"]};
-var state={q:"",owner:"",province:"",cat:"",status:"",type:"",year:"",sourceType:"",start:"",end:"",sort:"new",mode:"items",savedOnly:false,page:1,detail:{}};
+var state={q:"",owner:"",province:"",cat:"",status:"",type:"",year:"",sourceType:"",start:"",end:"",sort:"new",mode:"items",savedOnly:false,page:1,detail:{},sourceKey:""};
 var saved=[];
 try{saved=JSON.parse(localStorage.getItem("power-intel-favorites-v2")||"[]");if(!Array.isArray(saved))saved=[]}catch(e){saved=[]}
 function persistSaved(){try{localStorage.setItem("power-intel-favorites-v2",JSON.stringify(saved))}catch(e){}}
@@ -63,13 +63,13 @@ function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){n
 function manualCopy(text){var el=document.createElement("textarea");el.value=text;document.body.appendChild(el);el.select();var ok=false;try{ok=document.execCommand("copy")}catch(e){}el.remove();if(ok)toast("已复制到剪贴板");else window.prompt("长按复制：",text)}
 function readQuery(){
  var p=new URLSearchParams(location.search);
- ["q","owner","province","cat","status","type","year","sourceType","start","end","sort"].forEach(function(k){if(p.has(k))state[k]=p.get(k)||""});
+ ["q","owner","province","cat","status","type","year","sourceType","start","end","sort","sourceKey"].forEach(function(k){if(p.has(k))state[k]=p.get(k)||""});
  if(["items","sources","insights","saved"].indexOf(p.get("mode"))>=0)state.mode=p.get("mode");
  if(["new","old","title"].indexOf(state.sort)<0)state.sort="new";
 }
 function writeQuery(){
  var p=new URLSearchParams();
- ["q","owner","province","cat","status","type","year","sourceType","start","end","sort","mode"].forEach(function(k){if(state[k]&&state[k]!=="new"&&state[k]!=="items")p.set(k,state[k])});
+ ["q","owner","province","cat","status","type","year","sourceType","start","end","sort","mode","sourceKey"].forEach(function(k){if(state[k]&&state[k]!=="new"&&state[k]!=="items")p.set(k,state[k])});
  try{history.replaceState(null,"",location.pathname+(p.toString()?"?"+p.toString():""))}catch(e){}
 }
 function optionList(values){
@@ -90,6 +90,7 @@ function buildProvinceChips(){
 function filteredRows(){
  var terms=state.q.toLowerCase().trim().split(/\s+/).filter(Boolean);
  var s=rows.filter(function(r){
+  if(state.sourceKey&&r.sourceKey!==state.sourceKey)return false;
   if(state.owner&&r.owner!==state.owner)return false;
   if(state.province&&r.province!==state.province)return false;
   if(state.cat&&r.cat!==state.cat)return false;
@@ -167,6 +168,7 @@ function render(){
   if(state.sort==="old")grouped.reverse();
  }
  var resultCount=state.mode==="sources"?grouped.length:list.length;
+ EL("source-pin").hidden=!state.sourceKey;
  EL("result-title").textContent=state.mode==="sources"?"公告来源合并":"电力设备情报";
  EL("result-desc").textContent=state.mode==="sources"?("找到 "+resultCount+" 个不同来源 · 对应 "+list.length+" 条结构化记录"):("找到 "+resultCount+" 条索引 · 涉及 "+new Set(list.map(function(x){return x.sourceKey})).size+" 个不同来源");
  var modeLabels={items:"全部记录",sources:"按来源合并",insights:"统计观察",saved:"我的收藏"};
@@ -203,7 +205,7 @@ function render(){
 }
 function selectField(id,key){EL(id).addEventListener("change",function(){setFilter(key,this.value)})}
 function reset(){
- ["q","owner","province","cat","status","type","year","sourceType","start","end"].forEach(function(k){state[k]=""});
+ ["q","owner","province","cat","status","type","year","sourceType","start","end","sourceKey"].forEach(function(k){state[k]=""});
  state.sort="new";state.savedOnly=false;state.page=1;state.detail={};buildFilters();writeQuery();render();toast("已清空所有筛选");
 }
 function csvCell(s){return '"'+String(s===undefined||s===null?"":s).replace(/"/g,'""')+'"'}
@@ -221,7 +223,7 @@ function openDirectItem(id){
  var rec=byId[id];if(!rec)return;
  var old={owner:state.owner,province:state.province,cat:state.cat,status:state.status,type:state.type,year:state.year,sourceType:state.sourceType,start:state.start,end:state.end,q:state.q,savedOnly:state.savedOnly};
  Object.keys(old).forEach(function(k){if(k==="savedOnly")state[k]=false;else state[k]=""});
- state.q=rec.id;
+ state.q=rec.id;state.sourceKey="";
  state.mode="items";state.page=1;state.detail={[id]:true};
  buildFilters();writeQuery();render();
  var el=EL(id);if(el)el.scrollIntoView({behavior:"smooth",block:"center"});
@@ -233,6 +235,7 @@ function wireEvents(){
  selectField("filter-sort","sort");
  ["reset-main","reset-side"].forEach(function(id){EL(id).addEventListener("click",reset)});
  ["items","sources","insights","saved"].forEach(function(m){EL("mode-"+m).addEventListener("click",function(){setMode(m)})});
+ EL("source-pin").addEventListener("click",function(){state.sourceKey="";state.page=1;writeQuery();render()});
  EL("province-tabs").addEventListener("click",function(ev){var b=ev.target.closest("[data-province]");if(!b)return;var p=b.getAttribute("data-province");state.province=p;EL("filter-province").value=p;state.page=1;writeQuery();render()});
  EL("current-only").addEventListener("click",function(){state.savedOnly=!state.savedOnly;state.page=1;render()});
  EL("more").addEventListener("click",function(){state.page++;render()});
@@ -253,7 +256,7 @@ function wireEvents(){
   if(action==="group"){state.detail["g-"+id]=!state.detail["g-"+id];render();return}
   if(action==="share"){copyText(shareLink(r));return}
   if(action==="jump"||action==="read"){openDirectItem(id);return}
-  if(action==="source"){state.mode="sources";state.q=r.id;state.q="";state.owner=r.owner;state.province="";state.cat="";state.status="";state.type="";state.year="";state.sourceType="";state.start="";state.end="";state.page=1;state.detail={["g-"+r.id]:true};buildFilters();writeQuery();render();toast("已打开来源合并视图，可按原公告检索");return}
+  if(action==="source"){state.mode="sources";state.q="";state.owner="";state.province="";state.cat="";state.status="";state.type="";state.year="";state.sourceType="";state.start="";state.end="";state.sourceKey=r.sourceKey;state.savedOnly=false;state.page=1;state.detail={["g-"+r.id]:true};buildFilters();writeQuery();render();toast("正在查看这一来源的全部关联记录");return}
  });
 }
 function start(){
