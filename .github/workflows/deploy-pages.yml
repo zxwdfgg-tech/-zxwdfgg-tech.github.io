@@ -135,6 +135,13 @@ jobs:
           mkdir -p site/electric-lab
           cp -R electric-lab/. site/electric-lab/
 
+      - name: Include overseas guide in public site
+        run: |
+          mkdir -p site/overseas
+          cp -R overseas/. site/overseas/
+          test -s site/overseas/index.html
+          grep -q 'ydncg2024' site/overseas/index.html
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
