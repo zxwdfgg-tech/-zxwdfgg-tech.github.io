@@ -107,7 +107,7 @@ var chosen={year:'',cat:'',status:'',type:'',region:''};
 var expanded=false,opened={};
 var toast=document.getElementById('toast');
 var yearGroup=['2026','2025'],cats=['配网设备','主网设备','线缆材料','厂商格局','监测仪表','电力数据'];
-var stat=['历史招标','正式中标','中标候选','官方数据'];
+var stat=['招标中','历史招标','正式中标','中标候选','官方数据'];
 var types=['公告','中标标包','品类索引','统计发布'];
 var regions=['全国','南方五省','广东','广州','深圳','广西','云南','贵州','海南'];
 var byId=function(id){return document.getElementById(id)};
@@ -142,7 +142,7 @@ var chapterDefs=[
 ];
 function card(x,i){
 var label=x.type==='品类索引'?'历史品类':x.type==='中标标包'?'框架中标':x.status;
-var cls=x.status==='正式中标'?'authority':x.status==='中标候选'?'candidate':'';
+var cls=x.status==='正式中标'||x.status==='招标中'?'authority':x.status==='中标候选'?'candidate':'';
 var url=x.url&&/^https:\/\//.test(x.url)?x.url:'#';
 var o='<article class="entry" id="'+h(x.id)+'"><h3><span class="n">'+(i+1)+'.</span>'+h(x.title)+'</h3>';
 o+='<div class="bags"><span class="tag '+cls+'">'+h(label)+'</span><span class="tag">证据 A</span><span class="tag">'+h(x.date)+'</span><span class="tag">'+h(x.region)+'</span><span class="tag">'+h(x.cat)+'</span></div>';
