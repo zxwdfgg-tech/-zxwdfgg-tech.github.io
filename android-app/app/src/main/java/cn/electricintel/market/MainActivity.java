@@ -84,7 +84,6 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         if (Build.VERSION.SDK_INT >= 21) settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         if (Build.VERSION.SDK_INT >= 26) settings.setSafeBrowsingEnabled(true);
-        webView.addJavascriptInterface(new NativeApi(), "PowerAndroid");
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -147,11 +146,15 @@ public class MainActivity extends Activity {
     }
     private void openOffline() {
         online = false;
+        webView.removeJavascriptInterface("PowerAndroid");
+        webView.addJavascriptInterface(new NativeApi(), "PowerAndroid");
         modeLabel.setText("离线资料");
         webView.loadUrl(LOCAL_URL);
     }
     private void openOnline() {
         online = true;
+        // The native file-saving bridge is intentionally unavailable to remote websites.
+        webView.removeJavascriptInterface("PowerAndroid");
         modeLabel.setText("在线版");
         webView.loadUrl(PUBLIC_URL);
     }
