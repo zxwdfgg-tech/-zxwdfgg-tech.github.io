@@ -142,6 +142,13 @@ jobs:
           test -s site/overseas/index.html
           grep -q 'ydncg2024' site/overseas/index.html
 
+      - name: Include branded panel practice site
+        run: |
+          test -s peipan-trainer/index.html
+          node --check peipan-trainer/js/app.js
+          mkdir -p site/peipan-trainer
+          cp -R peipan-trainer/. site/peipan-trainer/
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
