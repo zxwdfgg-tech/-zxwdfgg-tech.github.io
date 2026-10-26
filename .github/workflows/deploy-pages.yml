@@ -149,6 +149,13 @@ jobs:
           mkdir -p site/peipan-trainer
           cp -R peipan-trainer/. site/peipan-trainer/
 
+      - name: Include bilingual economy magazine
+        run: |
+          test -s economy-atlas/index.html
+          mkdir -p site/economy-atlas
+          cp -R economy-atlas/. site/economy-atlas/
+          test -s site/economy-atlas/index.html
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
