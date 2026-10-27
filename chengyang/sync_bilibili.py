@@ -57,7 +57,17 @@ def get_json(url: str) -> dict:
     raise RuntimeError("无法读取公开接口：" + str(error)) from error
 
 def wbi_key() -> str:
-    data = get_json("https://api.bilibili.com/x/web-interface/nav")
+    # Bilibili may return code -101 (not logged in) but still expose wbi_img.
+    # Do not use the generic code==0 helper for the public nav endpoint.
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": OWNER_URL, "Accept": "application/json"}
+    if SESSDATA:
+        headers["Cookie"] = "SESSDATA=" + SESSDATA
+    request = urllib.request.Request("https://api.bilibili.com/x/web-interface/nav", headers=headers)
+    with urllib.request.urlopen(request, timeout=25) as response:
+        raw = json.loads(response.read().decode("utf-8"))
+    data = raw.get("data") or {}
+    if not data.get("wbi_img"):
+        raise RuntimeError("无法获取公开 WBI 签名材料：" + str(raw.get("code")))
     img = data.get("wbi_img") or {}
     first = (img.get("img_url") or "").rsplit("/", 1)[-1].split(".")[0]
     second = (img.get("sub_url") or "").rsplit("/", 1)[-1].split(".")[0]
