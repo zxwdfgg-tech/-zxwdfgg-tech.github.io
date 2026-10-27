@@ -156,6 +156,14 @@ jobs:
           cp -R economy-atlas/. site/economy-atlas/
           test -s site/economy-atlas/index.html
 
+      - name: Include Little Lens English learning website
+        run: |
+          node --check english-world/app.js
+          node --check english-world/curriculum.js
+          mkdir -p site/english-world
+          cp -R english-world/. site/english-world/
+          test -s site/english-world/index.html
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
