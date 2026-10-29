@@ -1,0 +1,62 @@
+name: Build Chinese Original Labs APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'zh-original/**'
+      - '.github/workflows/build-zh-original-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  android:
+    name: Original Labs Chinese APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Assemble separate Android app project
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a idc-android zh-android-build
+          cp zh-original/translator.js zh-android-build/app/src/main/assets/translator.js
+          cp zh-original/MainActivity.java zh-android-build/app/src/main/java/com/zhiweishixun/idclab/MainActivity.java
+          cp zh-original/AndroidManifest.xml zh-android-build/app/src/main/AndroidManifest.xml
+          sed -i "s/applicationId 'com.zhiweishixun.idclab'/applicationId 'com.zhiweishixun.zhoriginal'/" zh-android-build/app/build.gradle
+          grep -q "applicationId 'com.zhiweishixun.zhoriginal'" zh-android-build/app/build.gradle
+          test -s zh-android-build/app/src/main/assets/translator.js
+      - name: Compile installable APK
+        run: gradle -p zh-android-build :app:assembleDebug --no-daemon --stacktrace
+      - name: Stage installer
+        run: |
+          mkdir -p dist
+          cp zh-android-build/app/build/outputs/apk/debug/app-debug.apk dist/Engineering-Labs-ZH-v1.apk
+          test -s dist/Engineering-Labs-ZH-v1.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Engineering-Labs-ZH-v1
+          path: dist/Engineering-Labs-ZH-v1.apk
+          if-no-files-found: error
+      - name: Publish public APK release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zh-engineering-labs-v1
+          name: 工程实训原站中文助手 Android v1
+          body: |
+            原站入口和可识别界面中文辅助。包含：EDWartens 数据中心、EDWartens MCC 和 MEPVirtual。
+            提醒：原站内容在线加载，需要网络；未复制或内置原站3D和专有源码。
+            这是第三方工具、Debug签名测试安装包，未获得原站官方背书，也未完成真机兼容性测试。
+          files: dist/Engineering-Labs-ZH-v1.apk
+          fail_on_unmatched_files: true
