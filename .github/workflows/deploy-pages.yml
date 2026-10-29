@@ -164,6 +164,13 @@ jobs:
           cp -R english-world/. site/english-world/
           test -s site/english-world/index.html
 
+      - name: Include open-source Chinese IDC training lab
+        run: |
+          test -s idc-lab/index.html
+          mkdir -p site/idc-lab
+          cp -R idc-lab/. site/idc-lab/
+          test -s site/idc-lab/index.html
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
