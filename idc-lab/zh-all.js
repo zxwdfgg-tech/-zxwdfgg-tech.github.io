@@ -2,6 +2,20 @@
 (() => {
   'use strict';
   const terms = [
+    [/(\d+(?:\.\d+)?)\s*°C/g, '$1摄氏度'],
+    [/(\d+(?:\.\d+)?)\s*mm²/g, '$1平方毫米'],
+    [/mm²/g, '平方毫米'],
+    [/(\d+(?:\.\d+)?)\s*(kWh|kVA|kvar|kW|kV|kA|Ah|Hz|W|V|A|U)(?=$|[^A-Za-z])/gi,
+      (_, amount, unit) => amount + ({
+        kwh:'千瓦时',kva:'千伏安',kvar:'千乏',kw:'千瓦',kv:'千伏',
+        ka:'千安',ah:'安时',hz:'赫兹',w:'瓦',v:'伏',a:'安',u:'机架单位'
+      }[unit.toLowerCase()] || '计量单位')],
+    [/\bPUE(?=\d)/g, '电能使用效率'],
+    [/\bA\/B双路/g, '甲、乙双路'],
+    [/\bI\s*>/g, '电流整定大于'],
+    [/\bt(?=\s*\()/g, '时间'],
+    [/\bSI\b/g, '标准反时限'],
+
     [/\bCold\s+Aisle\b/gi, '冷通道'],
     [/\bHot\s+Aisle\b/gi, '热通道'],
     [/\bNODE[- ]?(\d+)\b/gi, '计算节点$1'],
@@ -72,6 +86,7 @@
     for (const [pattern, replacement] of terms) out = out.replace(pattern, replacement);
     // 不显示残留英文：特殊型号未在术语库内时使用显式中文复核标记。
     out = out.replace(/\b[A-Za-z][A-Za-z0-9_-]*\b/g, '待核对标识');
+    out = out.replace(/(冷通道)\s*\1/g, '$1').replace(/(热通道)\s*\1/g, '$1');
     return out;
   }
   const excluded = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE']);
