@@ -1,0 +1,56 @@
+name: 构建智维实训APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'idc-android/**'
+      - '.github/workflows/build-idc-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android-apk:
+    name: Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build debug APK
+        run: gradle -p idc-android :app:assembleDebug --no-daemon --stacktrace
+      - name: Prepare APK
+        run: |
+          mkdir -p dist
+          cp idc-android/app/build/outputs/apk/debug/app-debug.apk dist/Zhiwei-IDC-Training-v1.apk
+          test -s dist/Zhiwei-IDC-Training-v1.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zhiwei-IDC-Training-v1
+          path: dist/Zhiwei-IDC-Training-v1.apk
+          if-no-files-found: error
+      - name: Publish download in Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: zhiwei-idc-v1.0.0
+          name: 智维实训 中文版 APK v1.0.0
+          body: |
+            中文离线交互式实训原型：AI 数据中心 8 关、MCC 配电室 8 关、UPS 与柴油发电机 8 关。
+            注意：此 APK 为 Debug 签名测试包，仅用于教学体验，请勿用于现场操作。
+          files: dist/Zhiwei-IDC-Training-v1.apk
+          fail_on_unmatched_files: true
