@@ -15,6 +15,7 @@
     [/\bI\s*>/g, '电流整定大于'],
     [/\bt(?=\s*\()/g, '时间'],
     [/\bSI\b/g, '标准反时限'],
+    [/\bIEC\b/g, '国际电工标准'],
 
     [/\bCold\s+Aisle\b/gi, '冷通道'],
     [/\bHot\s+Aisle\b/gi, '热通道'],
@@ -23,7 +24,7 @@
     [/\bMCC[- ]?(\d+)\b/gi, '电动机控制柜$1'],
     [/\bTR[- ]?(\d+)\b/gi, '变压器$1'],
     [/\bR(\d+)\b/g, '机柜$1'],
-    [/\b8[- ]GPU\b/gi, '八卡图形计算服务器'],
+    [/\b8[- ]GPU\b/gi, '八卡图形计算'],
     [/\bN\s*\+\s*1\b/gi, '冗余一台'],
     [/\bIEC\s*SI\b/gi, '国际标准反时限'],
     [/\b[Aa]\s*\/\s*[Bb]\b/g, '甲、乙双路'],
@@ -86,7 +87,7 @@
     for (const [pattern, replacement] of terms) out = out.replace(pattern, replacement);
     // 不显示残留英文：特殊型号未在术语库内时使用显式中文复核标记。
     out = out.replace(/\b[A-Za-z][A-Za-z0-9_-]*\b/g, '待核对标识');
-    out = out.replace(/(冷通道)\s*\1/g, '$1').replace(/(热通道)\s*\1/g, '$1');
+    out = out.replace(/(冷通道)\s*\1/g, '$1').replace(/(热通道)\s*\1/g, '$1').replace(/机柜机柜/g, '机柜');
     return out;
   }
   const excluded = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE']);
