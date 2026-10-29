@@ -1,0 +1,19 @@
+{
+  "id": "./index.html",
+  "name": "智维实训 · 数据中心实训软件",
+  "short_name": "智维实训",
+  "lang": "zh-CN",
+  "description": "AI数据中心、MCC配电室与UPS柴油发电机24关中文互动模拟",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#071425",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
